@@ -1,6 +1,6 @@
 {
  "name": "giffyglyphs-markdown-maker",
- "version": "1.0.0",
+ "version": "1.0.1",
  "description": "Turn markdown in fully-featured HTML, PDFs, PNGs, JPGs, and more.",
  "keywords": [
   "giffyglyph",
@@ -25,7 +25,7 @@
  },
  "main": "markdownMaker.js",
  "license": "ISC",
- "devDependencies": {
+ "dependencies": {
   "archiver": "^5.3.0",
   "chalk": "^4.1.2",
   "commander": "^8.1.0",
