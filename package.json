@@ -1,0 +1,56 @@
+{
+ "name": "giffyglyphs-markdown-maker",
+ "version": "1.0.0",
+ "description": "Turn markdown in fully-featured HTML, PDFs, PNGs, JPGs, and more.",
+ "keywords": [
+  "giffyglyph",
+  "markdown",
+  "html",
+  "pdf",
+  "png",
+  "jpg",
+  "zip"
+ ],
+ "type": "module",
+ "homepage": "https://github.com/giffyglyph/giffyglyphs-markdown-maker",
+ "repository": {
+  "type": "git",
+  "url": "https://github.com/giffyglyph/giffyglyphs-markdown-maker.git"
+ },
+ "bugs": "https://github.com/giffyglyph/giffyglyphs-markdown-maker/issues",
+ "author": "Giffyglyph",
+ "scripts": {
+  "generate-docs": "node_modules/.bin/jsdoc -c jsdoc.json",
+  "lint-js": "node_modules/.bin/eslint markdownMaker.js {classes,programs,utilities}/**/*.js"
+ },
+ "main": "markdownMaker.js",
+ "license": "ISC",
+ "devDependencies": {
+  "archiver": "^5.3.0",
+  "chalk": "^4.1.2",
+  "commander": "^8.1.0",
+  "consola": "^2.15.3",
+  "console-clear": "^1.1.1",
+  "del": "^5.1.0",
+  "delete-empty": "^3.0.0",
+  "docdash": "^1.2.0",
+  "glob": "^7.1.7",
+  "gulp": "^4.0.2",
+  "gulp-beautify": "^3.0.0",
+  "gulp-cached": "^1.1.1",
+  "gulp-dom": "^1.0.0",
+  "gulp-if": "^3.0.0",
+  "gulp-plumber": "^1.2.1",
+  "gulp-rename": "^2.0.0",
+  "gulp-sass": "^4.0.2",
+  "gulp-sourcemaps": "^2.6.5",
+  "gulp-using": "^0.1.1",
+  "i18next": "^21.0.1",
+  "jsdoc": "^3.6.7",
+  "jsdom": "^16.6.0",
+  "marked": "^3.0.4",
+  "puppeteer": "^2.1.1",
+  "semver": "^7.3.5",
+  "through2": "^3.0.1"
+ }
+}

@@ -1,0 +1,11 @@
+{
+	"opts": {
+		"template": "node_modules/docdash",
+		"destination": "./jsdocs/"
+	},
+	"source": {
+		"include": ["markdownMaker.js", "classes", "programs", "utilities"],
+		"includePattern": ".+\\.js(doc|x)?$",
+		"excludePattern": "(^|\\/|\\\\)_"
+	}
+}
