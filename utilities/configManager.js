@@ -122,8 +122,8 @@ function _validateFormat(json, config) {
 	if (typeof json.publisher === 'undefined') {
 		throw new ReferenceError("This format is missing a MarkdownMaker compatibility version.");
 	}
-	if (!semver.satisfies(config.version, json.publisher)) {
-		throw new RangeError(`This format requires MarkdownMaker v${json.publisher} (v${config.version} installed).`);
+	if (!semver.satisfies(config.version, json.markdownMaker)) {
+		throw new RangeError(`This format requires MarkdownMaker v${json.markdownMaker} (v${config.version} installed).`);
 	}
 	if (typeof json.export === 'undefined') {
 		throw new ReferenceError("This format is missing a list of MarkdownMaker export options.");

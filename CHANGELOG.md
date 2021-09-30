@@ -6,6 +6,9 @@
 [![Twitter](https://img.shields.io/twitter/follow/giffyglyph?color=%231DA1F2&style=flat-square)](http://twitter.com/giffyglyph)
 [![Twitch](https://img.shields.io/twitch/status/giffyglyph?color=%23a45ee5&style=flat-square)](http://twitch.tv/giffyglyph)
 
+## v2.0.1
+* Format now specifies a markdownMaker version, not publisher.
+
 ## v2.0.0
 * Added GPLv3.0 license.
 * Added author/description fields to format/project.js.

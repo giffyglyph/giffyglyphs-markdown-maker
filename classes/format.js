@@ -12,8 +12,7 @@ class Format {
 	type = null;                          // format type
 	author = null;                        // format author
 	description = null;                   // format description
-	publisher = null;                     // required publisher version
-
+	markdownMaker = null;                 // required markdownMaker version
 	export = {
 		pdf: null,
 		png: null,
@@ -36,7 +35,6 @@ class Format {
 		exportZip: null,                    // function(job)
 		renderHtmlFragmentWrapper: null,    // function(job, filename, html), returns string
 		renderHtmlCollectionWrapper: null,  // function(job, filename, html), returns string
-		
 		saveHtmlFragment: null,             // function(job, language, stream)
 		saveHtmlCollection: null,           // function(job, language, stream)
 		validateCollectionJson: null,       // function(json), returns Object
