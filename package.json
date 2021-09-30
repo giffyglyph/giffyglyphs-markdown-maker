@@ -1,7 +1,7 @@
 {
  "name": "giffyglyphs-markdown-maker",
- "version": "1.0.1",
- "description": "Turn markdown in fully-featured HTML, PDFs, PNGs, JPGs, and more.",
+ "version": "2.0.0",
+ "description": "Turn markdown fragments into fully-featured HTML, PDFs, PNGs, JPGs, and more.",
  "keywords": [
   "giffyglyph",
   "markdown",
@@ -18,14 +18,15 @@
   "url": "https://github.com/giffyglyph/giffyglyphs-markdown-maker.git"
  },
  "bugs": "https://github.com/giffyglyph/giffyglyphs-markdown-maker/issues",
- "author": "Giffyglyph",
+ "author": "Giffyglyph <giffyglyph@gmail.com> (https://giffyglyph.com/)",
  "scripts": {
   "generate-docs": "node_modules/.bin/jsdoc -c jsdoc.json",
   "lint-js": "node_modules/.bin/eslint markdownMaker.js {classes,programs,utilities}/**/*.js"
  },
  "main": "markdownMaker.js",
- "license": "ISC",
+ "license": "GPL-3.0",
  "dependencies": {
+  "@jsbits/get-package-version": "^1.0.3",
   "archiver": "^5.3.0",
   "chalk": "^4.1.2",
   "commander": "^8.1.0",

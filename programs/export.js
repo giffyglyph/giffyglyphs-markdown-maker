@@ -2,7 +2,9 @@
  * This program is in charge of exporting artifacts.
  * 
  * @module Export
- * @author Giffyglyph
+ * @author Giffyglyph <giffyglyph@gmail.com>
+ * @copyright Giffyglyph 2021
+ * @license GPL-3.0-or-later
  */
 
 import * as exportManager from '../utilities/exportManager.js';

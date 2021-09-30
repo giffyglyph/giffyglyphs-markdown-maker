@@ -2,16 +2,17 @@
  * This class represents a MarkdownMaker project.
  * 
  * @module Project
- * @author Giffyglyph
+ * @author Giffyglyph <giffyglyph@gmail.com>
+ * @copyright Giffyglyph 2021
+ * @license GPL-3.0-or-later
  */
 
 class Project {
-	name = null;
-	version = null;
-	format = {};
-	override = {
-		processHtml: null
-	};
+	version = null;                       // project version 
+	author = null;                        // project author
+	description = null;                   // project description
+	format = {};                          // required formats
+	processHtml = null;                   // function(dom)
 
 	/**
 	 * Basic constructor.

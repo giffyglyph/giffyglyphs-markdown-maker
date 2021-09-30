@@ -2,12 +2,15 @@
  * This utility is in charge of loading and validating the MarkdownMaker configuration file.
  * 
  * @module ConfigManager
- * @author Giffyglyph
+ * @author Giffyglyph <giffyglyph@gmail.com>
+ * @copyright Giffyglyph 2021
+ * @license GPL-3.0-or-later
  */
 
 import path from 'path';
 import url from 'url';
 import semver from 'semver';
+import fs from 'fs';
 
 /**
  * Read, validate, and construct the MarkdownMaker configuration.
@@ -18,8 +21,9 @@ import semver from 'semver';
 async function createConfig(options) {
 	let validatedOptions = _validateMarkdownMakerOptions(options);
 	let config = {
+		title: validatedOptions.title ? validatedOptions.title : null,
 		name: "Giffyglyph's Markdown Maker",
-		version: "1.0.0",
+		version: _getPackageVersion(),
 		output: validatedOptions.output,
 		warnings: []
 	};
@@ -38,10 +42,11 @@ async function _loadFormatsIntoConfig(formatPaths, config) {
 	let formats = await Promise.allSettled(formatPaths.map(async(x) => {
 		try {
 			let format = _validateFormat((await import(url.pathToFileURL(path.join(process.cwd(), x)))).default, config);
+			format.name = path.basename(x, '.js');
 			format.src = format.src ? format.src : path.dirname(path.join(process.cwd(), x));
 			return format;
 		} catch (e) {
-			e.message = `[Loading format ${x}] ${e.message}`;
+			e.message = `[Loading ${x}] ${e.message} Update the format or remove it from the configuration.`;
 			throw e;
 		}
 	}));
@@ -62,10 +67,11 @@ async function _loadProjectsIntoConfig(projectPaths, config) {
 	let projects = await Promise.allSettled(projectPaths.map(async(x) => {
 		try {
 			let project = _validateProject((await import(url.pathToFileURL(path.join(process.cwd(), x)))).default, config);
+			project.name = path.basename(x, '.js');
 			project.src = project.src ? project.src : path.dirname(path.join(process.cwd(), x));
 			return project;
 		} catch (e) {
-			e.message = `[Loading project ${x}] ${e.message}`;
+			e.message = `[Loading ${x}] ${e.message} Update the project or remove it from the configuration.`;
 			throw e;
 		}
 	}));
@@ -110,20 +116,17 @@ function _validateMarkdownMakerOptions(options) {
  * @throws {Error} Any validation error.
  */
 function _validateFormat(json, config) {
-	if (typeof json.name === 'undefined') {
-		throw new ReferenceError("Format is missing a name.");
-	}
 	if (typeof json.version === 'undefined') {
-		throw new ReferenceError("Format is missing a version.");
+		throw new ReferenceError("This format is missing a version.");
 	}
 	if (typeof json.publisher === 'undefined') {
-		throw new ReferenceError("Format is missing a MarkdownMaker compatibility version.");
+		throw new ReferenceError("This format is missing a MarkdownMaker compatibility version.");
 	}
 	if (!semver.satisfies(config.version, json.publisher)) {
-		throw new RangeError(`Format isn't compatible with MarkdownMaker v${config.version} (requires v${json.publisher}).`);
+		throw new RangeError(`This format requires MarkdownMaker v${json.publisher} (v${config.version} installed).`);
 	}
 	if (typeof json.export === 'undefined') {
-		throw new ReferenceError("Format is missing a list of MarkdownMaker export options.");
+		throw new ReferenceError("This format is missing a list of MarkdownMaker export options.");
 	}
 	return json;
 }
@@ -137,17 +140,14 @@ function _validateFormat(json, config) {
  * @throws {Error} Any validation error.
  */
 function _validateProject(json, config) {
-	if (typeof json.name === 'undefined') {
-		throw new ReferenceError("Project is missing a name.");
-	}
 	if (typeof json.version === 'undefined') {
-		throw new ReferenceError("Project is missing a version.");
+		throw new ReferenceError("This project is missing a version.");
 	}
 	if (!Array.isArray(json.formats)) {
-		throw new TypeError("Project is missing a list of MarkdownMaker formats.");
+		throw new TypeError("This project is missing a list of MarkdownMaker formats.");
 	}
 	if (json.formats.length == 0) {
-		throw new RangeError("Project has zero MarkdownMaker formats.");
+		throw new RangeError("This project has zero MarkdownMaker formats.");
 	}
 	json.formats.forEach((x, i) => {
 		if (typeof x.name === 'undefined') {
@@ -168,6 +168,16 @@ function _validateProject(json, config) {
 		}
 	});
 	return json;
+}
+
+/**
+ * Get the package version.
+ * @returns {string} A package version.
+ */
+function _getPackageVersion() {
+	const packagePath = path.join(path.dirname(url.fileURLToPath(import.meta.url)), "../package.json");
+	const json = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+	return json.version;
 }
 
 export { createConfig };

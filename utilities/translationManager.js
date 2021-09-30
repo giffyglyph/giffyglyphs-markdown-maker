@@ -2,7 +2,9 @@
  * This utility is in charge of applying translations.
  * 
  * @module TranslationManager
- * @author Giffyglyph
+ * @author Giffyglyph <giffyglyph@gmail.com>
+ * @copyright Giffyglyph 2021
+ * @license GPL-3.0-or-later
  */
 
 import * as fileManager from './fileManager.js';

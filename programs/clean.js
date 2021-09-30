@@ -2,7 +2,9 @@
  * This program is in charge of deleting build artifacts.
  * 
  * @module Clean
- * @author Giffyglyph
+ * @author Giffyglyph <giffyglyph@gmail.com>
+ * @copyright Giffyglyph 2021
+ * @license GPL-3.0-or-later
  */
 
 import del from 'del';
@@ -16,7 +18,6 @@ import * as logManager from '../utilities/logManager.js';
 function clean(config, jobs) {
 	try {
 		if (jobs.length > 0) {
-			console.log(config.output.build, config.output.export);
 			logManager.postEmptyLine();
 			logManager.postInfo(logManager.formatBg(`Deleting [${jobs.flatMap((x) => [ x.output.build, x.output.export ]).join(", ")}]`, "blue"));
 			return del(jobs.flatMap((x) => [ x.output.build, x.output.export ]));

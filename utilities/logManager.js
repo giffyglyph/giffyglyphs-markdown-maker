@@ -2,7 +2,9 @@
  * This utility is in charge of logging information to the console screen.
  * 
  * @module LogManager
- * @author Giffyglyph
+ * @author Giffyglyph <giffyglyph@gmail.com>
+ * @copyright Giffyglyph 2021
+ * @license GPL-3.0-or-later
  */
 
 import clear from 'console-clear';
@@ -16,7 +18,6 @@ let isDiscrete = false;
  */
 function clearScreen() {
 	clear();
-	// chalk.level = 2;
 }
 
 /**

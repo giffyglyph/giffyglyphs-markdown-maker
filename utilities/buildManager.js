@@ -2,13 +2,16 @@
  * This utility is in charge of building HTML fragments from .md files and collections from .json files.
  * 
  * @module BuildManager
- * @author Giffyglyph
+ * @author Giffyglyph <giffyglyph@gmail.com>
+ * @copyright Giffyglyph 2021
+ * @license GPL-3.0-or-later
  */
 
 import * as fileManager from './fileManager.js';
 import * as logManager from './logManager.js';
 import * as markdownManager from './markdownManager.js';
 import * as translationManager from './translationManager.js';
+import * as jsonManager from './jsonManager.js';
 import beautify from 'gulp-beautify';
 import dom from 'gulp-dom';
 import gulp from 'gulp';
@@ -51,12 +54,14 @@ import using from 'gulp-using';
 			}))
 			.pipe(dom(function() {
 				// Apply format and project-specific HTML adjustments
-				if (typeof job.format.override.processHtml === 'function') {
-					job.format.override.processHtml(this);
+				if (typeof job.format.processHtml === 'function') {
+					job.format.processHtml(this);
 				}
-				if (typeof job.project.override.processHtml === 'function') {
-					job.project.override.processHtml(this);
+				if (typeof job.project.processHtml === 'function') {
+					job.project.processHtml(this);
 				}
+				// Run JSON renderers (if any)
+				jsonManager.renderJson(job, this);
 				// Apply translations (if any)
 				let translator = translationManager.createTranslator(job.project, job.format, language);
 				this.head.innerHTML = translator.replaceMessages(this.head.innerHTML);
@@ -90,7 +95,7 @@ import using from 'gulp-using';
 function buildHtmlCollections(job, language) {
 	return new Promise((resolve, reject) => {
 		let filename = '';
-		let version = '';
+		let version = job.project.version;
 		let stream = fileManager.getSrc(job.project, job.format, 'collections', (job.files ? `@(${job.files.join('|')})` : '*.json'))
 			.pipe(plumber({ errorHandler: reject }))
 			.pipe(gulpif(job.debug, using()))
@@ -106,9 +111,8 @@ function buildHtmlCollections(job, language) {
 						json = _validateCollectionJson(json);
 					}
 
-					// Get filename and version (used when saving)
-					filename = json.output.filename;
-					version = json.output.version;
+					// Get filename (used when saving)
+					filename = json.filename;
 
 					// Render the collection contents into a single HTML string
 					let html = "";
@@ -142,12 +146,14 @@ function buildHtmlCollections(job, language) {
 			}))
 			.pipe(dom(function() {
 				// Apply format and project-specific HTML adjustments
-				if (typeof job.format.override.processHtml === 'function') {
-					job.format.override.processHtml(this);
+				if (typeof job.format.processHtml === 'function') {
+					job.format.processHtml(this);
 				}
-				if (typeof job.project.override.processHtml === 'function') {
-					job.project.override.processHtml(this);
+				if (typeof job.project.processHtml === 'function') {
+					job.project.processHtml(this);
 				}
+				// Run JSON renderers (if any)
+				jsonManager.renderJson(job, this);
 				// Apply translations (if any)
 				let translator = translationManager.createTranslator(job.project, job.format, language);
 				this.head.innerHTML = translator.replaceMessages(this.head.innerHTML);
@@ -179,11 +185,8 @@ function buildHtmlCollections(job, language) {
  * @throws {Error} Any validation error.
  */
  function _validateCollectionJson(json) {
-	if (typeof json.output?.filename === 'undefined') {
+	if (typeof json.filename === 'undefined') {
 		throw new ReferenceError("Collection is missing an output name.");
-	}
-	if (typeof json.output?.version === 'undefined') {
-		throw new ReferenceError("Collection is missing an output version.");
 	}
 	if (!Array.isArray(json.contents)) {
 		throw new TypeError("Collection is missing a list of contents.");

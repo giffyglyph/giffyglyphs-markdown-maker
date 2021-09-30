@@ -2,7 +2,9 @@
  * This program is in charge of watching folders and—on any changes—retriggering build processes.
  * 
  * @module Watch
- * @author Giffyglyph
+ * @author Giffyglyph <giffyglyph@gmail.com>
+ * @copyright Giffyglyph 2021
+ * @license GPL-3.0-or-later
  */
 
 import * as build from "./build.js";
@@ -49,8 +51,8 @@ function _watchFolders(job, path, cb) {
  */
 function _listFolders(job, path) {
 	return [
-		`${job.format.src.replace(/\\/g, "/")}/src/${path}`,
-		`${job.project.src.replace(/\\/g, "/")}/src/${path}`
+		`${job.format.src.replace(/\\/g, "/")}/${path}`,
+		`${job.project.src.replace(/\\/g, "/")}/${path}`
 	];
 }
 

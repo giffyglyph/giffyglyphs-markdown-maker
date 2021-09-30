@@ -2,7 +2,9 @@
  * This utility is in charge of creating jobs (i.e. "work to be done") from arguments.
  * 
  * @module JobManager
- * @author Giffyglyph
+ * @author Giffyglyph <giffyglyph@gmail.com>
+ * @copyright Giffyglyph 2021
+ * @license GPL-3.0-or-later
  */
 
 import path from 'path';
@@ -17,15 +19,15 @@ import { default as Job } from '../classes/job.js';
 * @returns {Object[]} A list of jobs.
  */
 function getJobs(config, args) {
-  let jobs = [];
+	let jobs = [];
 	let warnings = [];
-  let projects = args.projects ? [...new Set(args.projects)] : config.projects.map((x) => x.name);
-  if (projects) {
-    projects.forEach((project) => {
-      let projectConfig = config.projects.find((x) => x.name == project);
-      let formats = args.formats ? [...new Set(args.formats)] : projectConfig.formats.map((x) => x.name);
-      if (formats) {
-        formats.forEach((format) => {
+	let projects = args.projects ? [...new Set(args.projects)] : config.projects.map((x) => x.name);
+	if (projects) {
+		projects.forEach((project) => {
+			let projectConfig = config.projects.find((x) => x.name == project);
+			let formats = args.formats ? [...new Set(args.formats)] : projectConfig.formats.map((x) => x.name);
+			if (formats) {
+				formats.forEach((format) => {
 					if (!projectConfig.formats.find((x) => x.name == format)) {
 						warnings.push(`Project "${projectConfig.name}" doesn't support format "${format}": skipping...`);
 					} else {
@@ -58,15 +60,15 @@ function getJobs(config, args) {
 							}
 						}
 					}
-        });
-      }
-    });
-  }
+				});
+			}
+		});
+	}
 	if (warnings.length > 0) {
 		logManager.postEmptyLine();
 		warnings.forEach((x) => logManager.postInfo(x));
 	}
-  return jobs;
+	return jobs;
 }
 
-export {getJobs };
+export { getJobs };

@@ -2,36 +2,15 @@
  * This utility is in charge of turning markdown into HTML.
  * 
  * @module MarkdownManager
- * @author Giffyglyph
+ * @author Giffyglyph <giffyglyph@gmail.com>
+ * @copyright Giffyglyph 2021
+ * @license GPL-3.0-or-later
  */
 
 import * as logManager from './logManager.js';
 import marked from 'marked';
 
 const extensions = [
-	{
-		name: 'pagebreak',
-		level: 'block',
-		start(src) { return src.match(/^\\pagebreak/)?.index; },
-		tokenizer(src) {
-			const match = src.match(/^\\pagebreak/);
-			if (match) {
-				const token = {
-					type: 'pagebreak',
-					raw: match[0]
-				};
-				return token;
-			}
-		},
-		renderer(token) {
-			let options = this.parser.options;
-			if (typeof options.renderOverrides?.pagebreak === 'function') {
-				return options.renderOverrides.pagebreak(options.renderJob, options.renderFilename, token, this.parser.parse(token.tokens));
-			} else {
-				return `<pagebreak></pagebreak>`;
-			}
-		}
-	},
 	{
 		name: 'colbreak',
 		level: 'block',
@@ -60,7 +39,7 @@ const extensions = [
 		level: 'block',
 		start(src) { return src.match(/^\\layoutBegin/)?.index; },
 		tokenizer(src) {
-			const match = src.match(/^\\layoutBegin *({.*?})?[\n$](.*?)\\layoutEnd.*?[\n$]?/s);
+			const match = src.match(/^\\layoutBegin *({.*?})?[\n$](.*?)\n\\layoutEnd.*?[\n$]?/s);
 			if (match) {
 				const tags = match[1] ? _parseTags(match[1]) : {};
 				const token = {
@@ -79,8 +58,11 @@ const extensions = [
 			if (typeof options.renderOverrides?.layout === 'function') {
 				return options.renderOverrides.layout(options.renderJob, options.renderFilename, token, this.parser.parse(token.tokens));
 			} else {
+				let id = token.tags?.id ? `id="${token.tags.id}"` : '';
+				let css = token.tags?.class ? token.tags.class : '';
+				let tags = token.tags && token.tags["_data"] ? token.tags["_data"] : '';
 				return `
-					<div${token.tags?.id ? ` id="${token.tags.id}"` : ''} class="layout${token.tags?.class ? ` ${token.tags.class}` : ''}"${token.tags["_data"] ? token.tags["_data"] : ''}>
+					<div ${id} class="layout ${css}" ${tags}>
 						${this.parser.parse(token.tokens)}
 					</div>
 				`;
@@ -88,15 +70,15 @@ const extensions = [
 		}
 	},
 	{
-		name: 'page',
+		name: 'content',
 		level: 'block',
-		start(src) { return src.match(/^\\pageBegin/)?.index; },
+		start(src) { return src.match(/^\\contentBegin/)?.index; },
 		tokenizer(src) {
-			const match = src.match(/^\\pageBegin *({.*?})?[\n$](.*?)\\pageEnd.*?[\n$]?/s);
+			const match = src.match(/^\\contentBegin *({.*?})?[\n$](.*?)\n\\contentEnd.*?[\n$]?/s);
 			if (match) {
 				const tags = match[1] ? _parseTags(match[1]) : {};
 				const token = {
-					type: 'page',
+					type: 'content',
 					raw: match[0],
 					text: match[2]?.trim(),
 					tags: tags,
@@ -108,13 +90,16 @@ const extensions = [
 		},
 		renderer(token) {
 			let options = this.parser.options;
-			if (typeof options.renderOverrides?.page === 'function') {
-				return options.renderOverrides.page(options.renderJob, options.renderFilename, token, this.parser.parse(token.tokens));
+			if (typeof options.renderOverrides?.content === 'function') {
+				return options.renderOverrides.content(options.renderJob, options.renderFilename, token, this.parser.parse(token.tokens));
 			} else {
+				let id = token.tags?.id ? `id="${token.tags.id}"` : '';
+				let css = token.tags?.class ? token.tags.class : '';
+				let tags = token.tags && token.tags["_data"] ? token.tags["_data"] : '';
 				return `
-					<div${token.tags?.id ? ` id="${token.tags.id}"` : ''} class="page${token.tags?.class ? ` ${token.tags.class}` : ''}"${token.tags["_data"] ? token.tags["_data"] : ''}>
+					<section ${id} class="${css}" ${tags}>
 						${this.parser.parse(token.tokens)}
-					</div>
+					</section>
 				`;
 			}
 		}
@@ -124,7 +109,7 @@ const extensions = [
 		level: 'block',
 		start(src) { return src.match(/^\\exampleBegin/)?.index; },
 		tokenizer(src) {
-			const match = src.match(/^\\exampleBegin *({.*?})?[\n$](.*?)\\exampleEnd.*?[\n$]?/s);
+			const match = src.match(/^\\exampleBegin *({.*?})?[\n$](.*?)\n\\exampleEnd.*?[\n$]?/s);
 			if (match) {
 				const tags = match[1] ? _parseTags(match[1]) : {};
 				const token = {
@@ -143,9 +128,51 @@ const extensions = [
 			if (typeof options.renderOverrides?.example === 'function') {
 				return options.renderOverrides.example(options.renderJob, options.renderFilename, token, this.parser.parse(token.tokens));
 			} else {
+				let id = token.tags?.id ? `id="${token.tags.id}"` : '';
+				let css = token.tags?.class ? token.tags.class : '';
+				let tags = token.tags && token.tags["_data"] ? token.tags["_data"] : '';
 				return `
-					<div${token.tags?.id ? ` id="${token.tags.id}"` : ''} class="panel panel--example${token.tags?.class ? ` ${token.tags.class}` : ''}"${token.tags["_data"] ? token.tags["_data"] : ''}>
-						<section class="panel__body">
+					<div ${id} class="example ${css}" ${tags}>
+						<section class="example__body">
+							${this.parser.parse(token.tokens)}
+						</section>
+					</div>
+				`;
+			}
+		}
+	},
+	{
+		name: 'tablewrap',
+		level: 'block',
+		start(src) { return src.match(/^\\tableBegin/)?.index; },
+		tokenizer(src) {
+			const match = src.match(/^\\tableBegin *({.*?})?[\n$](.*?)\n\\tableEnd.*?[\n$]?/s);
+			if (match) {
+				const tags = match[1] ? _parseTags(match[1]) : {};
+				const token = {
+					type: 'tablewrap',
+					raw: match[0],
+					text: match[2]?.trim(),
+					tags: tags,
+					tokens: []
+				};
+				this.lexer.blockTokens(token.text, token.tokens);
+				return token;
+			}
+		},
+		renderer(token) {
+			let options = this.parser.options;
+			if (typeof options.renderOverrides?.tablewrap === 'function') {
+				return options.renderOverrides.tablewrap(options.renderJob, options.renderFilename, token, this.parser.parse(token.tokens));
+			} else {
+				let id = token.tags?.id ? `id="${token.tags.id}"` : '';
+				let css = token.tags?.class ? token.tags.class : '';
+				let tags = token.tags && token.tags["_data"] ? token.tags["_data"] : '';
+				let title = token.tags?.title ? token.tags.title : '';
+				return `
+					<div ${id} class="table ${css}" ${tags}>
+						${title ? `<header class="table__header"><h4 class="table__title">${title}</h4></header>` : ''}
+						<section class="table__body">
 							${this.parser.parse(token.tokens)}
 						</section>
 					</div>
@@ -158,7 +185,7 @@ const extensions = [
 		level: 'block',
 		start(src) { return src.match(/^\\panelBegin/)?.index; },
 		tokenizer(src) {
-			const match = src.match(/^\\panelBegin *({.*?})?[\n$](.*?)\\panelEnd.*?[\n$]?/s);
+			const match = src.match(/^\\panelBegin *({.*?})?[\n$](.*?)\n\\panelEnd.*?[\n$]?/s);
 			if (match) {
 				const tags = match[1] ? _parseTags(match[1]) : {};
 				const token = {
@@ -177,13 +204,55 @@ const extensions = [
 			if (typeof options.renderOverrides?.panel === 'function') {
 				return options.renderOverrides.panel(options.renderJob, options.renderFilename, token, this.parser.parse(token.tokens));
 			} else {
+				let id = token.tags?.id ? `id="${token.tags.id}"` : '';
+				let panelType = token.tags.panelType ? ` panel--${token.tags.panelType}` : '';
+				let css = token.tags?.class ? token.tags.class : '';
+				let tags = token.tags && token.tags["_data"] ? token.tags["_data"] : '';
+				let title = token.tags?.title ? `<header class="panel__header"><h4 class="panel__title">${token.tags.title}</h4></header>` : '';
 				return `
-					<div${token.tags?.id ? ` id="${token.tags.id}"` : ''} class="panel${token.tags.panelType ? ` panel--${token.tags.panelType}` : ``}${token.tags?.class ? ` ${token.tags.class}` : ''}"${token.tags["_data"] ? token.tags["_data"] : ''}>
-						${token.tags?.title ? `<header class="panel__header"><h4 class="panel__title">${token.tags.title}</h4></header>` : ""}
+					<div ${id} class="panel ${panelType} ${css}" ${tags}>
+						${title}
 						<section class="panel__body">
 							${this.parser.parse(token.tokens)}
 						</section>
 					</div>
+				`;
+			}
+		}
+	},
+	{
+		name: 'figure',
+		level: 'block',
+		start(src) { return src.match(/^\\figureBegin/)?.index; },
+		tokenizer(src) {
+			const match = src.match(/^\\figureBegin *({.*?})?[\n$](.*?)\n\\figureEnd.*?[\n$]?/s);
+			if (match) {
+				const tags = match[1] ? _parseTags(match[1]) : {};
+				const token = {
+					type: 'figure',
+					raw: match[0],
+					text: match[2]?.trim(),
+					tags: tags,
+					tokens: []
+				};
+				this.lexer.blockTokens(token.text, token.tokens);
+				return token;
+			}
+		},
+		renderer(token) {
+			let options = this.parser.options;
+			if (typeof options.renderOverrides?.figure === 'function') {
+				return options.renderOverrides.figure(options.renderJob, options.renderFilename, token, this.parser.parse(token.tokens));
+			} else {
+				let id = token.tags?.id ? `id="${token.tags.id}"` : '';
+				let css = token.tags?.class ? token.tags.class : '';
+				let tags = token.tags && token.tags["_data"] ? token.tags["_data"] : '';
+				let caption = token.tags?.caption ? `<figcaption>${token.tags.caption}</figcaption>` : '';
+				return `
+					<figure ${id} class="figure ${css}" ${tags}>
+						${this.parser.parse(token.tokens)}
+						${caption}
+					</figure>
 				`;
 			}
 		}
@@ -199,9 +268,12 @@ const renderer = {
 			if (typeof this.options.renderOverrides?.heading === 'function') {
 				return this.options.renderOverrides.heading(level, title, tags);
 			} else {
+				let id = `id="${tags.id ? tags.id : title.replace(/<(span|i).*?>.*?<\/(span|i)>/g,"").trim().replace(/ /g, '-').toLowerCase()}"`;
+				let css = tags.class ? tags.class : '';
+				let data = tags["_data"] ? tags["_data"] : '';
 				return `
-				<h${level}${tags.id ? ` id="${tags.id}"` : ""}>${tags.index ? `<span class="index">${tags.index}</span>` : ``}${title}</h${level}>
-			`;
+					<h${level} ${id} class="${css}" ${data}>${tags.index ? `<span class="index">${tags.index}</span>` : ``}${title}</h${level}>
+				`;
 			}
 		} else {
 			return `
@@ -229,7 +301,7 @@ function initialise() {
  * @returns {string} HTML string.
  */
 function renderAsHtml(job, filename, text) {
-	return marked(text, { renderOverrides: job.format.renderer, renderJob: job, renderFilename: filename });
+	return marked(text, { renderOverrides: job.format.markdown, renderJob: job, renderFilename: filename });
 }
 
 /**
@@ -263,7 +335,7 @@ function _renderDataTags(json) {
 			}
 		});
 	}
-	return (tags.length == 0) ? '' : ` ${tags.join(" ")}`;
+	return (tags.length == 0) ? '' : `${tags.join(" ")}`;
 }
 
 export { initialise, renderAsHtml };

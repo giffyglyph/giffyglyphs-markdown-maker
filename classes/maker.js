@@ -1,13 +1,19 @@
 /**
- * This class represents a MarkdownMaker job.
+ * This class represents a MarkdownMaker configuration file.
  * 
- * @module Job
+ * @module Maker
  * @author Giffyglyph <giffyglyph@gmail.com>
  * @copyright Giffyglyph 2021
  * @license GPL-3.0-or-later
  */
 
-class Job {
+ class Maker {
+	output = {
+		build: null,
+		export: null
+	};
+	formats = [];
+	projects = [];
 
 	/**
 	 * Basic constructor.
@@ -18,4 +24,4 @@ class Job {
 	}
 }
 
-export default Job;
+export default Maker;

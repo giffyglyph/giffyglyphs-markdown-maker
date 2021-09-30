@@ -2,11 +2,17 @@
  * Main entry point to the application. This module takes input from the client and runs programs to create artifacts.
  * 
  * @module MarkdownMaker
- * @author Giffyglyph
+ * @author Giffyglyph <giffyglyph@gmail.com>
+ * @copyright Giffyglyph 2021
+ * @license GPL-3.0-or-later
  */
 
 import { build, listBuildTasks } from './programs/build.js';
 import { clean } from './programs/clean.js';
+import { createTranslator } from './utilities/translationManager.js';
+import { default as Format } from './classes/format.js';
+import { default as Maker } from './classes/maker.js';
+import { default as Project } from './classes/project.js';
 import { exportFiles } from './programs/export.js';
 import { InvalidArgumentError, program } from 'commander';
 import { watch } from './programs/watch.js';
@@ -14,8 +20,6 @@ import * as configManager from './utilities/configManager.js';
 import * as jobManager from './utilities/jobManager.js';
 import * as logManager from './utilities/logManager.js';
 import * as markdownManager from './utilities/markdownManager.js';
-import { default as Format } from './classes/format.js';
-import { default as Project } from './classes/project.js';
 
 /**
 * Main process. Parse input from the client and (if valid) run a program.
@@ -39,7 +43,8 @@ async function run(options) {
  */
 function _initialiseLogger(config) {
 	logManager.clearScreen();
-	logManager.postLog(logManager.formatBg(config.name, "green"));
+	logManager.postLog(logManager.formatBg(config.title ? config.title : `Starting application`, "green"));
+	logManager.postSuccess(`Loaded ${config.name} v${config.version}`);
 	if (config.formats.length > 0) {
 		logManager.postSuccess(`Loaded ${config.formats.length} format(s): ${config.formats.map((x) => `${x.name} v${x.version}`).join(", ")}`);
 	} else {
@@ -132,6 +137,15 @@ function _initialisePrograms(config) {
 				.then(() => { _postProgramSuccess(jobs) })
 				.catch((x) => { _postProgramError(x); });
 		});
+
+	program
+		.command('check')
+		.description('Check that the software and configuration are working correctly.')
+		.action(async function(args) {
+			await _startProgram(args, process.argv, null)
+				.then(() => { logManager.postSuccess(logManager.formatBg(`Set up is correct`, "green")); })
+				.catch((x) => { _postProgramError(x); });
+		});
 }
 
 /**
@@ -145,7 +159,9 @@ function _startProgram(args, argv, jobs) {
 		logManager.setLoggingLevel(args.debug ? 6 : 3);
 		logManager.postEmptyLine();
 		logManager.postInfo(`Running program: ${logManager.formatBg(argv.splice(2).join(" "), 'blue')}`);
-		logManager.postInfo(`Number of jobs: ${jobs.length}`);
+		if (Array.isArray(jobs)) {
+			logManager.postInfo(`Number of jobs: ${jobs.length}`);
+		}
 		return Promise.resolve();
 	} catch (e) {
 		return Promise.reject(e);
@@ -228,4 +244,4 @@ function _validateTaskName(taskName, previous) {
 	return tasks;
 }
 
-export { run, Format, Project };
+export { createTranslator, run, Format, Project, Maker };

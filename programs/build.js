@@ -2,7 +2,9 @@
  * This program is in charge of building projects.
  * 
  * @module Build
- * @author Giffyglyph
+ * @author Giffyglyph <giffyglyph@gmail.com>
+ * @copyright Giffyglyph 2021
+ * @license GPL-3.0-or-later
  */
 
 import * as fileManager from '../utilities/fileManager.js';
