@@ -1,6 +1,6 @@
 {
  "name": "giffyglyphs-markdown-maker",
- "version": "2.0.1",
+ "version": "2.0.2",
  "description": "Turn markdown fragments into fully-featured HTML, PDFs, PNGs, JPGs, and more.",
  "keywords": [
   "giffyglyph",

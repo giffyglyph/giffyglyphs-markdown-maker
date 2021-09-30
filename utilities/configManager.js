@@ -83,8 +83,8 @@ async function _loadProjectsIntoConfig(projectPaths, config) {
 }
 
 /**
- * Validate the publisher config file.
- * @returns {Object} A publisher config file.
+ * Validate the markdown maker config file.
+ * @returns {Object} A markdown maker config file.
  * @returns {Object} A validated json object.
  * @throws {Error} Any validation error.
  */
@@ -119,7 +119,7 @@ function _validateFormat(json, config) {
 	if (typeof json.version === 'undefined') {
 		throw new ReferenceError("This format is missing a version.");
 	}
-	if (typeof json.publisher === 'undefined') {
+	if (typeof json.markdownMaker === 'undefined') {
 		throw new ReferenceError("This format is missing a MarkdownMaker compatibility version.");
 	}
 	if (!semver.satisfies(config.version, json.markdownMaker)) {
