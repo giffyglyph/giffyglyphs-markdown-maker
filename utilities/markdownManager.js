@@ -256,6 +256,80 @@ const extensions = [
 				`;
 			}
 		}
+	},
+	{
+		name: 'card',
+		level: 'block',
+		start(src) { return src.match(/^\\cardBegin/)?.index; },
+		tokenizer(src) {
+			const match = src.match(/^\\cardBegin *({.*?})?[\n$](.*?)\n\\cardEnd.*?[\n$]?/s);
+			if (match) {
+				const tags = match[1] ? _parseTags(match[1]) : {};
+				const token = {
+					type: 'card',
+					raw: match[0],
+					text: match[2]?.trim(),
+					tags: tags,
+					tokens: []
+				};
+				this.lexer.blockTokens(token.text, token.tokens);
+				return token;
+			}
+		},
+		renderer(token) {
+			let options = this.parser.options;
+			if (typeof options.renderOverrides?.card === 'function') {
+				return options.renderOverrides.card(options.renderJob, options.renderFilename, token, this.parser.parse(token.tokens));
+			} else {
+				let id = token.tags?.id ? `id="${token.tags.id}"` : '';
+				let css = token.tags?.class ? token.tags.class : '';
+				let tags = token.tags && token.tags["_data"] ? token.tags["_data"] : '';
+				let img = token.tags?.img ? `<img class="card__image" src="${token.tags.img}">` : '';
+				return `
+					<div ${id} class="card ${css}" ${tags}>
+						${img}
+						<div class="card__body">
+							${this.parser.parse(token.tokens)}
+						</div>
+					</div>
+				`;
+			}
+		}
+	},
+	{
+		name: 'section',
+		level: 'block',
+		start(src) { return src.match(/^\\sectionBegin/)?.index; },
+		tokenizer(src) {
+			const match = src.match(/^\\sectionBegin *({.*?})?[\n$](.*?)\n\\sectionEnd.*?[\n$]?/s);
+			if (match) {
+				const tags = match[1] ? _parseTags(match[1]) : {};
+				const token = {
+					type: 'section',
+					raw: match[0],
+					text: match[2]?.trim(),
+					tags: tags,
+					tokens: []
+				};
+				this.lexer.blockTokens(token.text, token.tokens);
+				return token;
+			}
+		},
+		renderer(token) {
+			let options = this.parser.options;
+			if (typeof options.renderOverrides?.section === 'function') {
+				return options.renderOverrides.section(options.renderJob, options.renderFilename, token, this.parser.parse(token.tokens));
+			} else {
+				let id = token.tags?.id ? `id="${token.tags.id}"` : '';
+				let css = token.tags?.class ? token.tags.class : '';
+				let tags = token.tags && token.tags["_data"] ? token.tags["_data"] : '';
+				return `
+					<section ${id} class="section ${css}" ${tags}>
+						${this.parser.parse(token.tokens)}
+					</section>
+				`;
+			}
+		}
 	}
 ];
 

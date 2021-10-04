@@ -47,6 +47,8 @@ class Format {
 		page: null,                         // function(job, filename, token, tags), returns string
 		example: null,                      // function(job, filename, token, tags), returns string
 		panel: null,                        // function(job, filename, token, tags), returns string
+		card: null,                         // function(job, filename, token, tags), returns string
+		section: null,                      // function(job, filename, token, tags), returns string
 		heading: null                       // function(level, title, tags), returns string
 	};
 	json = {};
