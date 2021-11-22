@@ -35,6 +35,7 @@
   "del": "^5.1.0",
   "delete-empty": "^3.0.0",
   "docdash": "^1.2.0",
+  "eslint": "^8.0.0",
   "glob": "^7.1.7",
   "gulp": "^4.0.2",
   "gulp-beautify": "^3.0.0",
