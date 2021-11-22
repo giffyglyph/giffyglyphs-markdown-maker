@@ -7,6 +7,7 @@
  * @license GPL-3.0-or-later
  */
 
+import { createTranslator } from './translationManager.js';
 import { default as Job } from '../classes/job.js';
 import { listBuildTasks } from '../programs/build.js';
 import * as logManager from './logManager.js';
@@ -28,12 +29,14 @@ function getBuildJobs(config, args) {
 					warnings.push(`No valid output languages specified for "${project.name}/${format.name}": skipping...`);
 				} else {
 					languages.forEach((language) => {
+						let translator = createTranslator(project, format, language);
 						jobs.push(_createJob(config, project, format, {
 							debug: args.debug,
 							language: language,
 							files: args.files,
 							fragments: args.fragments,
-							task: task
+							task: task,
+							translator: translator
 						}));
 					});
 				}

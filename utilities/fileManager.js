@@ -67,6 +67,28 @@ function findFile(project, format, filepath) {
 }
 
 /**
+ * Get all file variants in three cascading folders: project+format, project, and format.
+ * @param {Object} project - Project config details.
+ * @param {Object} format - Format config details.
+ * @param {string} filepath - A target file to find.
+ * @returns {string[]} Returns a list of files.
+ */
+ function getFileVariants(project, format, filepath) {
+	const paths = [
+		path.join(project.src, "formats", format.name, filepath),
+		path.join(project.src, filepath),
+		path.join(format.src, filepath)
+	];
+	let files = [];
+	paths.forEach((path) => {
+		if (fs.existsSync(path)) {
+			files.push(fs.readFileSync(path, 'utf8'));
+		}
+	});
+	return files;
+}
+
+/**
  * List all filenames in a directory.
  * @param {string} dir - A directory path.
  * @returns {string[]} A list of filenames.
@@ -85,4 +107,4 @@ function createPath(path) {
 	}
 }
 
-export { getSrc, findFile, listFilenames, createPath };
+export { getSrc, findFile, listFilenames, createPath, getFileVariants };

@@ -9,7 +9,6 @@
 
 import { build, listBuildTasks } from './programs/build.js';
 import { clean } from './programs/clean.js';
-import { createTranslator } from './utilities/translationManager.js';
 import { default as Format } from './classes/format.js';
 import { default as Maker } from './classes/maker.js';
 import { default as Project } from './classes/project.js';
@@ -246,4 +245,4 @@ function _validateTaskName(taskName, previous) {
 	return tasks;
 }
 
-export { createTranslator, run, Format, Project, Maker };
+export { run, Format, Project, Maker };

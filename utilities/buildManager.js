@@ -11,7 +11,6 @@ import * as blueprintManager from './blueprintManager.js';
 import * as fileManager from './fileManager.js';
 import * as logManager from './logManager.js';
 import * as markdownManager from './markdownManager.js';
-import * as translationManager from './translationManager.js';
 import beautify from 'gulp-beautify';
 import dom from 'gulp-dom';
 import gulp from 'gulp';
@@ -55,17 +54,15 @@ import using from 'gulp-using';
 			.pipe(dom(function() {
 				// Apply format and project-specific HTML adjustments
 				if (typeof job.format.processHtml === 'function') {
-					job.format.processHtml(this);
+					job.format.processHtml(job, this);
 				}
 				if (typeof job.project.processHtml === 'function') {
-					job.project.processHtml(this);
+					job.project.processHtml(job, this);
 				}
 				// Run blueprint renderers (if any)
 				blueprintManager.renderBlueprints(job, this);
 				// Apply translations (if any)
-				let translator = translationManager.createTranslator(job.project, job.format, job.language);
-				this.head.innerHTML = translator.replaceMessages(this.head.innerHTML);
-				this.body.innerHTML = translator.replaceMessages(this.body.innerHTML);
+				job.translator.processDom(job, this);
 				return this;
 			}))
 			.pipe(beautify.html({ indent_with_tabs: true }));
@@ -146,17 +143,15 @@ function buildHtmlCollections(job) {
 			.pipe(dom(function() {
 				// Apply format and project-specific HTML adjustments
 				if (typeof job.format.processHtml === 'function') {
-					job.format.processHtml(this);
+					job.format.processHtml(job, this, collection);
 				}
 				if (typeof job.project.processHtml === 'function') {
-					job.project.processHtml(this);
+					job.project.processHtml(job, this, collection);
 				}
 				// Run blueprint renderers (if any)
 				blueprintManager.renderBlueprints(job, this, collection);
 				// Apply translations (if any)
-				let translator = translationManager.createTranslator(job.project, job.format, language);
-				this.head.innerHTML = translator.replaceMessages(this.head.innerHTML);
-				this.body.innerHTML = translator.replaceMessages(this.body.innerHTML);
+				job.translator.processDom(job, this, collection);
 				return this;
 			}))
 			.pipe(beautify.html({ indent_with_tabs: true }));

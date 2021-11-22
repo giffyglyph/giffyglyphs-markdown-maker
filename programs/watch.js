@@ -9,6 +9,7 @@
 
 import * as build from "./build.js";
 import * as logManager from "../utilities/logManager.js";
+import * as translationManager from "../utilities/translationManager.js";
 import gulp from "gulp";
 
 /**
@@ -23,6 +24,7 @@ function watch(jobs) {
 		logManager.postEmptyLine();
 		jobs.filter((x) => x.task === "fonts").forEach((x) => _watchFolders(x, 'fonts/**/*.*', build.buildFonts));
 		jobs.filter((x) => x.task === "html").forEach((x) => _watchFolders(x, '{fragments,collections}/**/*.*', build.buildHtml));
+		jobs.filter((x) => x.task === "html").forEach((x) => _watchFolders(x, 'translations/**/*.*', _deleteTranslations));
 		jobs.filter((x) => x.task === "images").forEach((x) => _watchFolders(x, 'images/**/*.+(jpg|jpeg|gif|png|svg)', build.buildImages));
 		jobs.filter((x) => x.task === "scripts").forEach((x) => _watchFolders(x, 'scripts/**/*.js', build.buildScripts));
 		jobs.filter((x) => x.task === "stylesheets").forEach((x) => _watchFolders(x, 'stylesheets/**/*.scss', build.buildStylesheets));
@@ -41,6 +43,16 @@ function _watchFolders(job, path, cb) {
 			e.forEach((x) => logManager.postError(x));
 		});
 	});
+}
+
+/**
+ * Delete all loaded translations and rebuild HTML.
+ * @param {Object[]} jobs - A list of watch jobs to perform.
+ * @returns {Promise} Status of the buildHtml task.
+ */
+function _deleteTranslations(jobs) {
+	translationManager.deleteMessageKeys();
+	return build.buildHtml(jobs);
 }
 
 /**
