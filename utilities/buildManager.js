@@ -7,11 +7,11 @@
  * @license GPL-3.0-or-later
  */
 
+import * as blueprintManager from './blueprintManager.js';
 import * as fileManager from './fileManager.js';
 import * as logManager from './logManager.js';
 import * as markdownManager from './markdownManager.js';
 import * as translationManager from './translationManager.js';
-import * as jsonManager from './jsonManager.js';
 import beautify from 'gulp-beautify';
 import dom from 'gulp-dom';
 import gulp from 'gulp';
@@ -60,8 +60,8 @@ import using from 'gulp-using';
 				if (typeof job.project.processHtml === 'function') {
 					job.project.processHtml(this);
 				}
-				// Run JSON renderers (if any)
-				jsonManager.renderJson(job, this);
+				// Run blueprint renderers (if any)
+				blueprintManager.renderBlueprints(job, this);
 				// Apply translations (if any)
 				let translator = translationManager.createTranslator(job.project, job.format, job.language);
 				this.head.innerHTML = translator.replaceMessages(this.head.innerHTML);
@@ -151,8 +151,8 @@ function buildHtmlCollections(job) {
 				if (typeof job.project.processHtml === 'function') {
 					job.project.processHtml(this);
 				}
-				// Run JSON renderers (if any)
-				jsonManager.renderJson(job, this);
+				// Run blueprint renderers (if any)
+				blueprintManager.renderBlueprints(job, this, collection);
 				// Apply translations (if any)
 				let translator = translationManager.createTranslator(job.project, job.format, language);
 				this.head.innerHTML = translator.replaceMessages(this.head.innerHTML);
