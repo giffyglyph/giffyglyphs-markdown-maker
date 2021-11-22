@@ -41,14 +41,27 @@ class Format {
 		renderCollectionJson: null          // function(job, json), returns string
 	};
 	markdown = {
-		table: null,                        // function(job, filename, token, tags), returns string
 		colbreak: null,                     // function(job, filename, token, tags), returns string
-		layout: null,                       // function(job, filename, token, tags), returns string
+		banner: null,                       // function(job, filename, token, tags), returns string
+		banners: null,                      // function(job, filename, token, tags), returns string
+		sidebar: null,                      // function(job, filename, token, tags), returns string
+		sidebars: null,                     // function(job, filename, token, tags), returns string
 		page: null,                         // function(job, filename, token, tags), returns string
-		example: null,                      // function(job, filename, token, tags), returns string
-		panel: null,                        // function(job, filename, token, tags), returns string
+		pages: null,                        // function(job, filename, token, tags), returns string
 		card: null,                         // function(job, filename, token, tags), returns string
-		section: null,                      // function(job, filename, token, tags), returns string
+		cards: null,                        // function(job, filename, token, tags), returns string
+		poster: null,                       // function(job, filename, token, tags), returns string
+		posters: null,                      // function(job, filename, token, tags), returns string
+		content: null,                      // function(job, filename, token, tags), returns string
+		contents: null,                     // function(job, filename, token, tags), returns string
+		panel: null,                        // function(job, filename, token, tags), returns string
+		panels: null,                       // function(job, filename, token, tags), returns string
+		example: null,                      // function(job, filename, token, tags), returns string
+		examples: null,                     // function(job, filename, token, tags), returns string
+		region: null,                       // function(job, filename, token, tags), returns string
+		regions: null,                      // function(job, filename, token, tags), returns string
+		figure: null,                       // function(job, filename, token, tags), returns string
+		figures: null,                      // function(job, filename, token, tags), returns string
 		heading: null                       // function(level, title, tags), returns string
 	};
 	json = {};
