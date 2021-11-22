@@ -76,15 +76,16 @@ function _initialisePrograms(config) {
 		.option('-d, --debug', 'Show debug information')
 		.option('-di, --discrete', 'Minimal colors & graphics in logs')
 		.action(async function(args) {
-			let jobs = jobManager.getJobs(config, args);
-			await _startProgram(args, process.argv, jobs)
+			let buildJobs = jobManager.getBuildJobs(config, args);
+			await _startProgram(args, process.argv, buildJobs)
 				.then(() => {
 					if (args.clean) {
-						return clean(config, jobs);
+						let cleanJobs = jobManager.getCleanJobs(config, args);
+						return clean(cleanJobs);
 					}
 				})
-				.then(() => { return build(jobs); })
-				.then(() => { if (args.watch) { return watch(jobs); } else { _postProgramSuccess(jobs); }})
+				.then(() => { return build(buildJobs); })
+				.then(() => { if (args.watch) { return watch(buildJobs); } else { _postProgramSuccess(buildJobs); }})
 				.catch((x) => { _postProgramError(x); });
 		});
 
@@ -96,9 +97,9 @@ function _initialisePrograms(config) {
 		.option('-d, --debug', 'Show debug information')
 		.option('-di, --discrete', 'Minimal colors & graphics in logs')
 		.action(async function(args) {
-			let jobs = jobManager.getJobs(config, args);
+			let jobs = jobManager.getCleanJobs(config, args);
 			await _startProgram(args, process.argv, jobs)
-				.then(() => { return clean(config, jobs); })
+				.then(() => { return clean(jobs); })
 				.then(() => { _postProgramSuccess(jobs) })
 				.catch((x) => { _postProgramError(x); });
 		});
@@ -108,13 +109,14 @@ function _initialisePrograms(config) {
 		.description('Watch folders for changes.')
 		.option('-p, --projects <name...>', 'Project names', (value, previous) => { return _validateProjectName(config, value, previous); })
 		.option('-f, --formats <name...>', 'Format names', (value, previous) => { return _validateFormatName(config, value, previous); })
+		.option('-l, --languages <code...>', 'Language codes')
 		.option('-t, --tasks <task...>', 'Tasks to perform', _validateTaskName)
 		.option('-fi, --files <name...>', 'Files to watch')
 		.option('-fr, --fragments', 'Build fragments, not collections')
 		.option('-d, --debug', 'Show debug information')
 		.option('-di, --discrete', 'Minimal colors & graphics in logs')
 		.action(async function(args) {
-			let jobs = jobManager.getJobs(config, args);
+			let jobs = jobManager.getBuildJobs(config, args);
 			await _startProgram(args, process.argv, jobs)
 				.then(() => { return watch(jobs); })
 				.catch((x) => { _postProgramError(x); });
@@ -131,7 +133,7 @@ function _initialisePrograms(config) {
 		.option('-d, --debug', 'Show debug information')
 		.option('-di, --discrete', 'Minimal colors & graphics in logs')
 		.action(async function(args) {
-			let jobs = jobManager.getJobs(config, args);
+			let jobs = jobManager.getExportJobs(config, args);
 			await _startProgram(args, process.argv, jobs)
 				.then(() => { return exportFiles(jobs); })
 				.then(() => { _postProgramSuccess(jobs) })

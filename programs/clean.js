@@ -15,14 +15,14 @@ import * as logManager from '../utilities/logManager.js';
  * @param {Object[]} jobs - A list of clean jobs to perform.
  * @returns {Promise} Promise that represents the success/failure states of all jobs.
  */
-function clean(config, jobs) {
+function clean(jobs) {
 	try {
 		if (jobs.length > 0) {
+			let folders = jobs.flatMap((x) => [ x.output.build, x.output.export ]);
 			logManager.postEmptyLine();
-			logManager.postInfo(logManager.formatBg(`Deleting [${jobs.flatMap((x) => [ x.output.build, x.output.export ]).join(", ")}]`, "blue"));
-			return del(jobs.flatMap((x) => [ x.output.build, x.output.export ]));
+			logManager.postInfo(logManager.formatBg(`Deleting [${folders.join(", ")}]`, "blue"));
+			return del(folders);
 		}
-		
 	} catch (e) {
 		return Promise.reject(e);
 	}
