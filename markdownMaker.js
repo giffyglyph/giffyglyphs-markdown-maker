@@ -13,6 +13,8 @@ import { default as Format } from './classes/format.js';
 import { default as Maker } from './classes/maker.js';
 import { default as Project } from './classes/project.js';
 import { exportFiles } from './programs/export.js';
+import { findFile } from './utilities/fileManager.js';
+import { math } from './utilities/mathManager.js';
 import { InvalidArgumentError, program } from 'commander';
 import { watch } from './programs/watch.js';
 import * as configManager from './utilities/configManager.js';
@@ -245,4 +247,4 @@ function _validateTaskName(taskName, previous) {
 	return tasks;
 }
 
-export { run, Format, Project, Maker };
+export { findFile, math, run, logManager, Format, Project, Maker };
