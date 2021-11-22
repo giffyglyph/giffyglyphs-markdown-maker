@@ -1,7 +1,6 @@
 /**
  * This class represents a MarkdownMaker format.
  * 
- * @module Format
  * @author Giffyglyph <giffyglyph@gmail.com>
  * @copyright Giffyglyph 2021
  * @license GPL-3.0-or-later
@@ -19,26 +18,27 @@ class Format {
 		jpg: null,
 		zip: null
 	};
-	processHtml = null;                   // function(dom)
 	override = {
-		buildHtml: null,                    // function(jobs), returns Promise
-		buildHtmlFragments: null,           // function(job, language), returns Promise
-		buildHtmlCollections: null,         // function(job, language), returns Promise
-		buildScripts: null,                 // function(jobs), returns Promise
-		buildStylesheets: null,             // function(jobs), returns Promise
-		buildImages: null,                  // function(jobs), returns Promise
-		buildFonts: null,                   // function(jobs), returns Promise
-		buildVendors: null,                 // function(jobs), returns Promise
+		buildFonts: null,                   // function(job), returns Promise
+		buildHtml: null,                    // function(job), returns Promise
+		buildHtmlCollections: null,         // function(job), returns Promise
+		buildHtmlFragments: null,           // function(job), returns Promise
+		buildImages: null,                  // function(job), returns Promise
+		buildScripts: null,                 // function(job), returns Promise
+		buildStylesheets: null,             // function(job), returns Promise
+		buildVendors: null,                 // function(job), returns Promise
+		exportJpgs: null,                   // function(job, file, options)
 		exportPdf: null,                    // function(job, file, options)
 		exportPngs: null,                   // function(job, file, options)
-		exportJpgs: null,                   // function(job, file, options)
 		exportZip: null,                    // function(job)
-		renderHtmlFragmentWrapper: null,    // function(job, filename, html), returns string
+		processDomCollection: null,         // function(job, dom, collection)
+		processDomFragment: null,           // function(job, dom)
+		renderCollectionJson: null,         // function(job, json), returns string
 		renderHtmlCollectionWrapper: null,  // function(job, filename, html), returns string
-		saveHtmlFragment: null,             // function(job, language, stream)
-		saveHtmlCollection: null,           // function(job, language, stream)
-		validateCollectionJson: null,       // function(json), returns Object
-		renderCollectionJson: null          // function(job, json), returns string
+		renderHtmlFragmentWrapper: null,    // function(job, filename, html), returns string
+		saveCollection: null,               // function(job, stream)
+		saveFragment: null,                 // function(job, stream)
+		validateCollectionJson: null        // function(json), returns Object
 	};
 	markdown = {
 		colbreak: null,                     // function(job, filename, token, tags), returns string
@@ -64,7 +64,8 @@ class Format {
 		figures: null,                      // function(job, filename, token, tags), returns string
 		heading: null                       // function(level, title, tags), returns string
 	};
-	json = {};
+	blueprint = {};
+	module = {};
 
 	/**
 	 * Basic constructor.

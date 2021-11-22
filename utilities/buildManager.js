@@ -53,11 +53,11 @@ import using from 'gulp-using';
 			}))
 			.pipe(dom(function() {
 				// Apply format and project-specific HTML adjustments
-				if (typeof job.format.processHtml === 'function') {
-					job.format.processHtml(job, this);
+				if (typeof job.format.override.processDomFragment === 'function') {
+					job.format.override.processDomFragment(job, this);
 				}
-				if (typeof job.project.processHtml === 'function') {
-					job.project.processHtml(job, this);
+				if (typeof job.project.override.processDomFragment === 'function') {
+					job.project.override.processDomFragment(job, this);
 				}
 				// Run blueprint renderers (if any)
 				blueprintManager.renderBlueprints(job, this);
@@ -68,8 +68,8 @@ import using from 'gulp-using';
 			.pipe(beautify.html({ indent_with_tabs: true }));
 
 		// Save the fragment
-		if (typeof job.format.override.saveHtmlFragment === 'function') {
-			job.format.override.saveHtmlFragment(job, filename, stream);
+		if (typeof job.format.override.saveFragment === 'function') {
+			job.format.override.saveFragment(job, filename, stream);
 		} else {
 			stream.pipe(rename((path) => {
 				path.basename = filename + (job.language ? `_${job.language}` : ``);
@@ -142,11 +142,11 @@ function buildHtmlCollections(job) {
 			}))
 			.pipe(dom(function() {
 				// Apply format and project-specific HTML adjustments
-				if (typeof job.format.processHtml === 'function') {
-					job.format.processHtml(job, this, collection);
+				if (typeof job.format.override.processDomCollection === 'function') {
+					job.format.override.processDomCollection(job, this, collection);
 				}
-				if (typeof job.project.processHtml === 'function') {
-					job.project.processHtml(job, this, collection);
+				if (typeof job.project.override.processDomCollection === 'function') {
+					job.project.override.processDomCollection(job, this, collection);
 				}
 				// Run blueprint renderers (if any)
 				blueprintManager.renderBlueprints(job, this, collection);
@@ -157,8 +157,8 @@ function buildHtmlCollections(job) {
 			.pipe(beautify.html({ indent_with_tabs: true }));
 
 		// Save the collection
-		if (typeof job.format.override.saveHtmlCollection === 'function') {
-			job.format.override.saveHtmlCollection(job, filename, stream);
+		if (typeof job.format.override.saveCollection === 'function') {
+			job.format.override.saveCollection(job, filename, stream);
 		} else {
 			stream.pipe(rename((path) => {
 				path.basename = filename + `_v${job.project.version.replace(/\./g, '-')}` + (job.language ? `_${job.language}` : '');
