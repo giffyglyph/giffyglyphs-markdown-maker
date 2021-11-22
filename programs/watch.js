@@ -52,7 +52,8 @@ function _watchFolders(job, path, cb) {
 function _listFolders(job, path) {
 	return [
 		`${job.format.src.replace(/\\/g, "/")}/${path}`,
-		`${job.project.src.replace(/\\/g, "/")}/${path}`
+		`${job.project.src.replace(/\\/g, "/")}/${path}`,
+		`${job.project.src.replace(/\\/g, "/")}/formats/${job.format.name}/${path}`
 	];
 }
 

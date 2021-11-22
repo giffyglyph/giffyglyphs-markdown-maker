@@ -35,8 +35,8 @@ function getSrc(project, format, folder, files, filter) {
 		)
 	).pipe(
 		gulp.src(
-			path.join(project.src, `${folder}/_${format.name}/**/${filter ? filter : ''}${files}`),
-			{ base: path.join(project.src, `${folder}/_${format.name}`) }
+			path.join(project.src, `formats/${format.name}/${folder}/**/${filter ? filter : ''}${files}`),
+			{ base: path.join(project.src, `formats/${format.name}/${folder}`) }
 		)
 	);
 }
@@ -45,15 +45,14 @@ function getSrc(project, format, folder, files, filter) {
  * Find a file in one of three cascading folders: project+format, project, then format.
  * @param {Object} project - Project config details.
  * @param {Object} format - Format config details.
- * @param {string} folder - A target folder to search in.
- * @param {string} filename - A target file to find.
+ * @param {string} filepath - A target file to find.
  * @returns {string|null} Returns either a file or null if no file is found.
  */
-function findFile(project, format, folder, filename) {
+function findFile(project, format, filepath) {
 	const paths = [
-		path.join(project.src, folder, `_${format.name}`, filename),
-		path.join(project.src, folder, filename),
-		path.join(format.src, folder, filename)
+		path.join(project.src, "formats", format.name, filepath),
+		path.join(project.src, filepath),
+		path.join(format.src, filepath)
 	];
 	let file = null;
 	paths.some((path) => {
