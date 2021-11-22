@@ -6,6 +6,19 @@
 [![Twitter](https://img.shields.io/twitter/follow/giffyglyph?color=%231DA1F2&style=flat-square)](http://twitter.com/giffyglyph)
 [![Twitch](https://img.shields.io/twitch/status/giffyglyph?color=%23a45ee5&style=flat-square)](http://twitch.tv/giffyglyph)
 
+## v3.0.0
+* Project/format override files must now be placed in a `<project>/formats/<format>` folder.
+* Translations are now handled using i18next.
+* Dynamic "json" blocks are now "blueprint" blocks.
+* Blueprints can now be specified in YAML.
+* Added new markdown extensions: banner, sidebar, page, card, poster, region, figure.
+* Retired markdown extensions: layout, table, section.
+* Added support for mathJs blueprints.
+* Projects and formats can now access findFiles, math, and logManager.
+
+## v2.1.0
+* Added card/section markdown extensions and renderers.
+
 ## v2.0.2
 * Removed additional publisher references.
 
