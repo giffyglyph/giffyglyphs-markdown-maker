@@ -50,6 +50,7 @@
   "jsdoc": "^3.6.7",
   "jsdom": "^16.6.0",
   "marked": "^3.0.4",
+  "mathjs": "^9.5.0",
   "puppeteer": "^2.1.1",
   "semver": "^7.3.5",
   "through2": "^3.0.1",

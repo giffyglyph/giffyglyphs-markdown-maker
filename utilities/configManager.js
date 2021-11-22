@@ -7,6 +7,7 @@
  * @license GPL-3.0-or-later
  */
 
+import * as mathManager from './mathManager.js';
 import path from 'path';
 import url from 'url';
 import semver from 'semver';
@@ -44,6 +45,12 @@ async function _loadFormatsIntoConfig(formatPaths, config) {
 			let format = _validateFormat((await import(url.pathToFileURL(path.join(process.cwd(), x)))).default, config);
 			format.name = path.basename(x, '.js');
 			format.src = format.src ? format.src : path.dirname(path.join(process.cwd(), x));
+
+			// Assign default blueprint managers
+			format.blueprint = Object.assign({
+				math: mathManager.renderBlueprint
+			}, format.blueprint);
+
 			return format;
 		} catch (e) {
 			e.message = `[Loading ${x}] ${e.message} Update the format or remove it from the configuration.`;
