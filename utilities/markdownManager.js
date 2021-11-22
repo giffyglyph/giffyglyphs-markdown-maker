@@ -34,192 +34,24 @@ const extensions = [
 			}
 		}
 	},
-	{
-		name: 'layout',
-		level: 'block',
-		start(src) { return src.match(/^\\layoutBegin/)?.index; },
-		tokenizer(src) {
-			const match = src.match(/^\\layoutBegin *({.*?})?[\n$](.*?)\n\\layoutEnd.*?[\n$]?/s);
-			if (match) {
-				const tags = match[1] ? _parseTags(match[1]) : {};
-				const token = {
-					type: 'layout',
-					raw: match[0],
-					text: match[2]?.trim(),
-					tags: tags,
-					tokens: []
-				};
-				this.lexer.blockTokens(token.text, token.tokens);
-				return token;
-			}
-		},
-		renderer(token) {
-			let options = this.parser.options;
-			if (typeof options.renderOverrides?.layout === 'function') {
-				return options.renderOverrides.layout(options.renderJob, options.renderFilename, token, this.parser.parse(token.tokens));
-			} else {
-				let id = token.tags?.id ? `id="${token.tags.id}"` : '';
-				let css = token.tags?.class ? token.tags.class : '';
-				let tags = token.tags && token.tags["_data"] ? token.tags["_data"] : '';
-				return `
-					<div ${id} class="layout ${css}" ${tags}>
-						${this.parser.parse(token.tokens)}
-					</div>
-				`;
-			}
-		}
-	},
-	{
-		name: 'content',
-		level: 'block',
-		start(src) { return src.match(/^\\contentBegin/)?.index; },
-		tokenizer(src) {
-			const match = src.match(/^\\contentBegin *({.*?})?[\n$](.*?)\n\\contentEnd.*?[\n$]?/s);
-			if (match) {
-				const tags = match[1] ? _parseTags(match[1]) : {};
-				const token = {
-					type: 'content',
-					raw: match[0],
-					text: match[2]?.trim(),
-					tags: tags,
-					tokens: []
-				};
-				this.lexer.blockTokens(token.text, token.tokens);
-				return token;
-			}
-		},
-		renderer(token) {
-			let options = this.parser.options;
-			if (typeof options.renderOverrides?.content === 'function') {
-				return options.renderOverrides.content(options.renderJob, options.renderFilename, token, this.parser.parse(token.tokens));
-			} else {
-				let id = token.tags?.id ? `id="${token.tags.id}"` : '';
-				let css = token.tags?.class ? token.tags.class : '';
-				let tags = token.tags && token.tags["_data"] ? token.tags["_data"] : '';
-				return `
-					<section ${id} class="${css}" ${tags}>
-						${this.parser.parse(token.tokens)}
-					</section>
-				`;
-			}
-		}
-	},
-	{
-		name: 'example',
-		level: 'block',
-		start(src) { return src.match(/^\\exampleBegin/)?.index; },
-		tokenizer(src) {
-			const match = src.match(/^\\exampleBegin *({.*?})?[\n$](.*?)\n\\exampleEnd.*?[\n$]?/s);
-			if (match) {
-				const tags = match[1] ? _parseTags(match[1]) : {};
-				const token = {
-					type: 'example',
-					raw: match[0],
-					text: match[2]?.trim(),
-					tags: tags,
-					tokens: []
-				};
-				this.lexer.blockTokens(token.text, token.tokens);
-				return token;
-			}
-		},
-		renderer(token) {
-			let options = this.parser.options;
-			if (typeof options.renderOverrides?.example === 'function') {
-				return options.renderOverrides.example(options.renderJob, options.renderFilename, token, this.parser.parse(token.tokens));
-			} else {
-				let id = token.tags?.id ? `id="${token.tags.id}"` : '';
-				let css = token.tags?.class ? token.tags.class : '';
-				let tags = token.tags && token.tags["_data"] ? token.tags["_data"] : '';
-				return `
-					<div ${id} class="example ${css}" ${tags}>
-						<section class="example__body">
-							${this.parser.parse(token.tokens)}
-						</section>
-					</div>
-				`;
-			}
-		}
-	},
-	{
-		name: 'tablewrap',
-		level: 'block',
-		start(src) { return src.match(/^\\tableBegin/)?.index; },
-		tokenizer(src) {
-			const match = src.match(/^\\tableBegin *({.*?})?[\n$](.*?)\n\\tableEnd.*?[\n$]?/s);
-			if (match) {
-				const tags = match[1] ? _parseTags(match[1]) : {};
-				const token = {
-					type: 'tablewrap',
-					raw: match[0],
-					text: match[2]?.trim(),
-					tags: tags,
-					tokens: []
-				};
-				this.lexer.blockTokens(token.text, token.tokens);
-				return token;
-			}
-		},
-		renderer(token) {
-			let options = this.parser.options;
-			if (typeof options.renderOverrides?.tablewrap === 'function') {
-				return options.renderOverrides.tablewrap(options.renderJob, options.renderFilename, token, this.parser.parse(token.tokens));
-			} else {
-				let id = token.tags?.id ? `id="${token.tags.id}"` : '';
-				let css = token.tags?.class ? token.tags.class : '';
-				let tags = token.tags && token.tags["_data"] ? token.tags["_data"] : '';
-				let title = token.tags?.title ? token.tags.title : '';
-				return `
-					<div ${id} class="table ${css}" ${tags}>
-						${title ? `<header class="table__header"><h4 class="table__title">${title}</h4></header>` : ''}
-						<section class="table__body">
-							${this.parser.parse(token.tokens)}
-						</section>
-					</div>
-				`;
-			}
-		}
-	},
-	{
-		name: 'panel',
-		level: 'block',
-		start(src) { return src.match(/^\\panelBegin/)?.index; },
-		tokenizer(src) {
-			const match = src.match(/^\\panelBegin *({.*?})?[\n$](.*?)\n\\panelEnd.*?[\n$]?/s);
-			if (match) {
-				const tags = match[1] ? _parseTags(match[1]) : {};
-				const token = {
-					type: 'panel',
-					raw: match[0],
-					text: match[2]?.trim(),
-					tags: tags,
-					tokens: []
-				};
-				this.lexer.blockTokens(token.text, token.tokens);
-				return token;
-			}
-		},
-		renderer(token) {
-			let options = this.parser.options;
-			if (typeof options.renderOverrides?.panel === 'function') {
-				return options.renderOverrides.panel(options.renderJob, options.renderFilename, token, this.parser.parse(token.tokens));
-			} else {
-				let id = token.tags?.id ? `id="${token.tags.id}"` : '';
-				let panelType = token.tags.panelType ? ` panel--${token.tags.panelType}` : '';
-				let css = token.tags?.class ? token.tags.class : '';
-				let tags = token.tags && token.tags["_data"] ? token.tags["_data"] : '';
-				let title = token.tags?.title ? `<header class="panel__header"><h4 class="panel__title">${token.tags.title}</h4></header>` : '';
-				return `
-					<div ${id} class="panel ${panelType} ${css}" ${tags}>
-						${title}
-						<section class="panel__body">
-							${this.parser.parse(token.tokens)}
-						</section>
-					</div>
-				`;
-			}
-		}
-	},
+	_createBlockExtension("banner"),
+	_createBlockExtension("banners"),
+	_createBlockExtension("sidebar"),
+	_createBlockExtension("sidebars"),
+	_createBlockExtension("page"),
+	_createBlockExtension("pages"),
+	_createBlockExtension("card"),
+	_createBlockExtension("cards"),
+	_createBlockExtension("poster"),
+	_createBlockExtension("posters"),
+	_createBlockExtension("content"),
+	_createBlockExtension("contents"),
+	_createBlockExtension("panel"),
+	_createBlockExtension("panels"),
+	_createBlockExtension("example"),
+	_createBlockExtension("examples"),
+	_createBlockExtension("region"),
+	_createBlockExtension("regions"),
 	{
 		name: 'figure',
 		level: 'block',
@@ -247,90 +79,16 @@ const extensions = [
 				let id = token.tags?.id ? `id="${token.tags.id}"` : '';
 				let css = token.tags?.class ? token.tags.class : '';
 				let tags = token.tags && token.tags["_data"] ? token.tags["_data"] : '';
-				let caption = token.tags?.caption ? `<figcaption>${token.tags.caption}</figcaption>` : '';
 				return `
 					<figure ${id} class="figure ${css}" ${tags}>
 						${this.parser.parse(token.tokens)}
-						${caption}
+						${token.tags?.caption ? `<figcaption>${token.tags.caption}</figcaption>` : ''}
 					</figure>
 				`;
 			}
 		}
 	},
-	{
-		name: 'card',
-		level: 'block',
-		start(src) { return src.match(/^\\cardBegin/)?.index; },
-		tokenizer(src) {
-			const match = src.match(/^\\cardBegin *({.*?})?[\n$](.*?)\n\\cardEnd.*?[\n$]?/s);
-			if (match) {
-				const tags = match[1] ? _parseTags(match[1]) : {};
-				const token = {
-					type: 'card',
-					raw: match[0],
-					text: match[2]?.trim(),
-					tags: tags,
-					tokens: []
-				};
-				this.lexer.blockTokens(token.text, token.tokens);
-				return token;
-			}
-		},
-		renderer(token) {
-			let options = this.parser.options;
-			if (typeof options.renderOverrides?.card === 'function') {
-				return options.renderOverrides.card(options.renderJob, options.renderFilename, token, this.parser.parse(token.tokens));
-			} else {
-				let id = token.tags?.id ? `id="${token.tags.id}"` : '';
-				let css = token.tags?.class ? token.tags.class : '';
-				let tags = token.tags && token.tags["_data"] ? token.tags["_data"] : '';
-				let img = token.tags?.img ? `<img class="card__image" src="${token.tags.img}">` : '';
-				return `
-					<div ${id} class="card ${css}" ${tags}>
-						${img}
-						<div class="card__body">
-							${this.parser.parse(token.tokens)}
-						</div>
-					</div>
-				`;
-			}
-		}
-	},
-	{
-		name: 'section',
-		level: 'block',
-		start(src) { return src.match(/^\\sectionBegin/)?.index; },
-		tokenizer(src) {
-			const match = src.match(/^\\sectionBegin *({.*?})?[\n$](.*?)\n\\sectionEnd.*?[\n$]?/s);
-			if (match) {
-				const tags = match[1] ? _parseTags(match[1]) : {};
-				const token = {
-					type: 'section',
-					raw: match[0],
-					text: match[2]?.trim(),
-					tags: tags,
-					tokens: []
-				};
-				this.lexer.blockTokens(token.text, token.tokens);
-				return token;
-			}
-		},
-		renderer(token) {
-			let options = this.parser.options;
-			if (typeof options.renderOverrides?.section === 'function') {
-				return options.renderOverrides.section(options.renderJob, options.renderFilename, token, this.parser.parse(token.tokens));
-			} else {
-				let id = token.tags?.id ? `id="${token.tags.id}"` : '';
-				let css = token.tags?.class ? token.tags.class : '';
-				let tags = token.tags && token.tags["_data"] ? token.tags["_data"] : '';
-				return `
-					<section ${id} class="section ${css}" ${tags}>
-						${this.parser.parse(token.tokens)}
-					</section>
-				`;
-			}
-		}
-	}
+	_createBlockExtension("figures")
 ];
 
 const renderer = {
@@ -346,7 +104,7 @@ const renderer = {
 				let css = tags.class ? tags.class : '';
 				let data = tags["_data"] ? tags["_data"] : '';
 				return `
-					<h${level} ${id} class="${css}" ${data}>${tags.index ? `<span class="index">${tags.index}</span>` : ``}${title}</h${level}>
+					<h${level} ${id} class="${css}" ${data}>${tags.icon ? `<span class="icon">${tags.icon}</span>` : ``}${tags.index ? `<span class="index">${tags.index}</span>` : ``}${title}</h${level}>
 				`;
 			}
 		} else {
@@ -405,11 +163,73 @@ function _renderDataTags(json) {
 	if (json) {
 		Object.entries(json).forEach(([x, y]) => {
 			if (x.match(/^data-/)) {
-				tags.push(`${x}="${y}"`);
+				if (typeof y === 'object') {
+					tags.push(`${x}='${JSON.stringify(y)}'`);
+				} else {
+					tags.push(`${x}="${y}"`);
+				}
 			}
 		});
 	}
 	return (tags.length == 0) ? '' : `${tags.join(" ")}`;
+}
+
+/**
+ * Creates a common block extension based on a target element name.
+ * @param {string} name - An element name.
+ * @returns {Object} A marked.js extension defintion.
+ */
+function _createBlockExtension(name) {
+	return {
+		name: name,
+		level: 'block',
+		start(src) {
+			return src.match(new RegExp(`^\\\\${name}Begin`))?.index;
+		},
+		tokenizer(src) {
+			const match = src.match(new RegExp(`^\\\\${name}Begin *({.*?})?[\\n$](.*?)\\n\\\\${name}End.*?[\\n$]?`, "s"));
+			if (match) {
+				const tags = match[1] ? _parseTags(match[1]) : {};
+				const token = {
+					type: name,
+					raw: match[0],
+					text: match[2]?.trim(),
+					tags: tags,
+					tokens: []
+				};
+				this.lexer.blockTokens(token.text, token.tokens);
+				return token;
+			}
+		},
+		renderer(token) {
+			let options = this.parser.options;
+			if (options.renderOverrides && typeof options.renderOverrides[name] === 'function') {
+				return options.renderOverrides[name](options.renderJob, options.renderFilename, token, this.parser.parse(token.tokens));
+			} else {
+				let id = token.tags?.id ? `id="${token.tags.id}"` : '';
+				let css = token.tags?.class ? token.tags.class : '';
+				let tags = token.tags && token.tags["_data"] ? token.tags["_data"] : '';
+				let type = token.tags?.type ? `${name}--${token.tags.type}` : '';
+				let titleElement = token.tags?.titleElement ? token.tags.titleElement : "div";
+				let title = token.tags?.title ? `<${titleElement} class="${name}__title">${token.tags.title}</${titleElement}>` : '';
+				let subtitle = token.tags?.subtitle ? `<div class="${name}__subtitle">${token.tags.subtitle}</div>` : '';
+				return `
+					<div ${id} class="${name} ${type} ${css}" ${tags}>
+						${(title || subtitle) ? `
+							<div class="${name}__header">
+								${title}
+								${subtitle}
+							</div>
+						` : ''}
+						<div class="${name}__body">
+							${token.tags?.lines > 0 ? "<p>&nbsp;</p>".repeat(token.tags.lines) : ''}
+							${this.parser.parse(token.tokens)}
+						</div>
+					</div>
+				`;
+			}
+		}
+	}
 }
 
 export { initialise, renderAsHtml };

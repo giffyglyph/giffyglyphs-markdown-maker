@@ -26,16 +26,16 @@ import using from 'gulp-using';
 function build(jobs) {
 	if (jobs.length > 0) {
 		logManager.postEmptyLine();
-		logManager.postInfo(logManager.formatBg(`Building [${jobs[0].tasks.join(", ")}]`, "blue"));
+		logManager.postInfo(logManager.formatBg(`Building [${[...new Set(jobs.map((x) => x.task))].join(", ")}]`, "blue"));
 		logManager.postEmptyLine();
 	}
 	return Promise.allSettled([
-			buildImages(jobs.filter((x) => x.tasks.includes("images"))),
-			buildScripts(jobs.filter((x) => x.tasks.includes("scripts"))),
-			buildStylesheets(jobs.filter((x) => x.tasks.includes("stylesheets"))),
-			buildVendors(jobs.filter((x) => x.tasks.includes("vendors"))),
-			buildHtml(jobs.filter((x) => x.tasks.includes("html"))),
-			buildFonts(jobs.filter((x) => x.tasks.includes("fonts"))),
+			buildImages(jobs.filter((x) => x.task === "images")),
+			buildScripts(jobs.filter((x) => x.task === "scripts")),
+			buildStylesheets(jobs.filter((x) => x.task === "stylesheets")),
+			buildVendors(jobs.filter((x) => x.task === "vendors")),
+			buildHtml(jobs.filter((x) => x.task === "html")),
+			buildFonts(jobs.filter((x) => x.task === "fonts")),
 	])
 	.then((results) => { return _filterResults(results); });
 }
@@ -53,27 +53,22 @@ function buildHtml(jobs) {
 			if (typeof job.format.override.buildHtml === 'function') {
 				promise = job.format.override.buildHtml(job);
 			} else {
-				promise = Promise.allSettled(job.languages.flatMap((language) => {
-					try {
-						if (job.fragments) {
-							if (typeof job.format.override.buildHtmlFragments === 'function') {
-								return job.format.override.buildHtmlFragments(job, language);
-							} else {
-								return buildManager.buildHtmlFragments(job, language);
-							}
-						} else {
-							if (typeof job.format.override.buildHtmlCollections === 'function') {
-								return job.format.override.buildHtmlCollections(job, language);
-							} else {
-								return buildManager.buildHtmlCollections(job, language);
-							}
-						}
-					} catch (e) {
-						return Promise.reject(e);
+				if (job.fragments) {
+					if (typeof job.format.override.buildHtmlFragments === 'function') {
+						promise = job.format.override.buildHtmlFragments(job);
+					} else {
+						promise = buildManager.buildHtmlFragments(job);
 					}
-				}));
+				} else {
+					if (typeof job.format.override.buildHtmlCollections === 'function') {
+						promise = job.format.override.buildHtmlCollections(job);
+					} else {
+						promise = buildManager.buildHtmlCollections(job);
+					}
+				}
 			}
-			return promise.then((results) => { return _filterResults(results); }).then(() => { _finishJob(job, "Built HTML"); });
+			promise.then(() => { _finishJob(job, "Built HTML"); }).catch(() => { });
+			return promise;
 		} catch (e) {
 			return Promise.reject(e);
 		}

@@ -8,35 +8,75 @@
  */
 
 import * as fileManager from './fileManager.js';
+import i18next from 'i18next';
+import YAML from 'yaml';
 
 const messageKeys = {};
 
 /**
- * Create a translator and load it with translation keys.
+ * Create a translator that can be used to translate a HTML DOM.
  * @param {Object} project - The target project.
  * @param {Object} format - The target format.
  * @param {string} language - The target language to translate into.
- * @returns {Object} A translator object that can be used repeatedly.
+ * @returns {Object} A translator object.
  */
 function createTranslator(project, format, language) {
-	const messages = _getMessageKeys (project, format, language);
-
-	return {		
-		getMessage: function(key, vars) {
-			const message = messages.match(new RegExp(`${key}=(.*?)$`, 'm'));
-			return message ? _applyVars(message[1], vars) : key;
-		},
-		replaceMessages: function(text) {
-			return text.replace(/{{msg:(.*?)}}/g, function(match, p1) {
-				const message = _getMessageKeys(project, format, language).match(new RegExp(`${p1}=(.*?)$`, 'm'));
-				return message ? message[1] : match;
-			});
-		},
-		hasKey: function(key) {
-			const message = messages.match(new RegExp(`${key}=(.*?)$`, 'm'));
-			return message ? true : false;
+	const translator = i18next.createInstance();
+	translator.init({
+		lng: language,
+		fallbackLng: 'en',
+		resources: {
+			en: {
+				translation: _getMessageKeys(project, format, 'en')
+			},
+			[language]: {
+				translation: _getMessageKeys(project, format, language)
+			}
 		}
-	}
+	});
+	translator.processDom = function(job, dom) {
+		dom.querySelectorAll("[data-i18n]").forEach((x) => {
+			if (this.exists(x.dataset.i18n)) {
+				let options = {};
+				try {
+					if (x.dataset.i18nOptions) {
+						options = JSON.parse(x.dataset.i18nOptions);
+					}
+				} catch (e) {
+					e.message  = `[Parsing ${x.dataset.i18nOptions}] ${e.message}`;
+					throw e;
+				}
+				let translation = this.t(x.dataset.i18n, options);
+				switch (x.dataset.i18nTransform) {
+					case "lowercase":
+						translation = translation.toLowerCase();
+						break;
+					case "uppercase":
+						translation = translation.toUpperCase();
+						break;
+				}
+				switch (x.dataset.i18nDisplay) {
+					case "inner":
+						x.innerHTML = translation;
+						break;
+					case "outer":
+					default:
+						x.outerHTML = translation;
+						break;
+				}
+			}
+		});
+	};
+	return translator;
+}
+
+/**
+ * Delete all loaded message keys.
+ */
+function deleteMessageKeys() {
+	Object.keys(messageKeys).forEach((x) => {
+		delete messageKeys[x];
+	});
 }
 
 /**
@@ -45,32 +85,16 @@ function createTranslator(project, format, language) {
  * @param {Object} format - The target format.
  * @param {string} language - The target language to translate into.
  * @returns {string} A translation file.
- * @todo Should return an object of unique keys, not a single block of text.
  */
 function _getMessageKeys(project, format, language) {
 	if (!messageKeys[`${project.name}.${format.name}.${language}`]) {
-		let keys = fileManager.findFile(project, format, 'translations', `${language}.txt`);
-		messageKeys[`${project.name}.${format.name}.${language}`] = keys;
+		let translations = fileManager.getFileVariants(project, format, `translations/${language}.yml`);
+		if (translations.length > 0) {
+			translations = translations.map((x) => YAML.parse(x)).reverse().reduce((x, y) => Object.assign(x, y), {});
+		}
+		messageKeys[`${project.name}.${format.name}.${language}`] = translations;
 	}
 	return messageKeys[`${project.name}.${format.name}.${language}`];
 }
 
-/**
- * Replace message placeholders with variables (e.g. "getting {0} messages").
- * @param {string} message - The current message.
- * @param {string[]} vars - A list of variables.
- * @returns {string} An updates message string.
- */
-function _applyVars(message, vars) {
-	if (vars) {
-		let output = message;
-		vars.forEach((x, i) => {
-			output = output.replace(new RegExp("\\{" + i + "\\}", "g"), x);
-		});
-		return output;
-	} else {
-		return message;
-	}
-}
-
-export { createTranslator };
+export { createTranslator, deleteMessageKeys };

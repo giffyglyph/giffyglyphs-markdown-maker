@@ -7,11 +7,10 @@
  * @license GPL-3.0-or-later
  */
 
+import * as blueprintManager from './blueprintManager.js';
 import * as fileManager from './fileManager.js';
 import * as logManager from './logManager.js';
 import * as markdownManager from './markdownManager.js';
-import * as translationManager from './translationManager.js';
-import * as jsonManager from './jsonManager.js';
 import beautify from 'gulp-beautify';
 import dom from 'gulp-dom';
 import gulp from 'gulp';
@@ -25,57 +24,55 @@ import using from 'gulp-using';
 /**
  * Build HTML fragments from markdown.
  * @param {Object} job - A specific job to perform.
- * @param {string} language - A specific language to output.
  * @returns {Promise} Promise that represents the success/failure state of the job.
  */
- function buildHtmlFragments(job, language) {
+ function buildHtmlFragments(job) {
 	return new Promise((resolve, reject) => {
-		let stream = fileManager.getSrc(job.project, job.format, 'fragments', (job.files ? `@(${job.files.join('|')})` : '*.md'))
+		let filename = '';
+		const stream = fileManager.getSrc(job.project, job.format, `fragments/${job.language}`, (job.files ? `@(${job.files.join('|')})` : '*.md'))
 			.pipe(plumber({ errorHandler: reject }))
 			.pipe(gulpif(job.debug, using()))
 			.pipe(through2.obj((chunk, enc, callback) => {
-				let fragmentFilename = path.basename(chunk.path);
+				filename = path.basename(chunk.path, ".md");
 				try {
 					// Render the markdown into HTML
-					let html = markdownManager.renderAsHtml(job, fragmentFilename, chunk.contents.toString());
+					let html = markdownManager.renderAsHtml(job, filename, chunk.contents.toString());
 
 					// Wrap the page in HTML head/body tags
 					if (typeof job.format.override.renderHtmlFragmentWrapper === 'function') {
-						html = job.format.override.renderHtmlFragmentWrapper(job, fragmentFilename, html);
+						html = job.format.override.renderHtmlFragmentWrapper(job, filename, html);
 					} else {
 						html = `<html><head></head><body>${html}</body></html>`;
 					}
 					chunk.contents = Buffer.from(html);
 					callback(null, chunk);
 				} catch (e) {
-					e.message = `[Building ${job.project.name}/fragments/${fragmentFilename}] ${e.message}`;
+					e.message = `[Building ${job.project.name}/fragments/${job.language}/${filename}] ${e.message}`;
 					reject(e);
 				}
 			}))
 			.pipe(dom(function() {
 				// Apply format and project-specific HTML adjustments
-				if (typeof job.format.processHtml === 'function') {
-					job.format.processHtml(this);
+				if (typeof job.format.override.processDomFragment === 'function') {
+					job.format.override.processDomFragment(job, this);
 				}
-				if (typeof job.project.processHtml === 'function') {
-					job.project.processHtml(this);
+				if (typeof job.project.override.processDomFragment === 'function') {
+					job.project.override.processDomFragment(job, this);
 				}
-				// Run JSON renderers (if any)
-				jsonManager.renderJson(job, this);
+				// Run blueprint renderers (if any)
+				blueprintManager.renderBlueprints(job, this);
 				// Apply translations (if any)
-				let translator = translationManager.createTranslator(job.project, job.format, language);
-				this.head.innerHTML = translator.replaceMessages(this.head.innerHTML);
-				this.body.innerHTML = translator.replaceMessages(this.body.innerHTML);
+				job.translator.processDom(job, this);
 				return this;
 			}))
 			.pipe(beautify.html({ indent_with_tabs: true }));
 
 		// Save the fragment
-		if (typeof job.format.override.saveHtmlFragment === 'function') {
-			job.format.override.saveHtmlFragment(job, language, stream);
+		if (typeof job.format.override.saveFragment === 'function') {
+			job.format.override.saveFragment(job, filename, stream);
 		} else {
 			stream.pipe(rename((path) => {
-				path.basename += (language ? `_${language}` : ``);
+				path.basename = filename + (job.language ? `_${job.language}` : ``);
 				path.extname = '.html';
 				logManager.postInfo(logManager.formatTask(job.project.name, job.format.name, path.basename + path.extname, "Built HTML fragment"));
 			}))
@@ -89,40 +86,39 @@ import using from 'gulp-using';
 /**
  * Build HTML collections from json configuration files.
  * @param {Object} job - A specific job to perform.
- * @param {string} language - A specific language to output.
  * @returns {Promise} Promise that represents the success/failure state of the job.
  */
-function buildHtmlCollections(job, language) {
+function buildHtmlCollections(job) {
 	return new Promise((resolve, reject) => {
 		let filename = '';
-		let version = job.project.version;
-		let stream = fileManager.getSrc(job.project, job.format, 'collections', (job.files ? `@(${job.files.join('|')})` : '*.json'))
+		let collection = null;
+		const stream = fileManager.getSrc(job.project, job.format, `collections/${job.language}`, (job.files ? `@(${job.files.join('|')})` : '*.json'))
 			.pipe(plumber({ errorHandler: reject }))
 			.pipe(gulpif(job.debug, using()))
 			.pipe(through2.obj((chunk, enc, callback) => {
 				let collectionFilename = path.basename(chunk.path);
 				try {
-					let json = JSON.parse(chunk.contents.toString());
+					collection = JSON.parse(chunk.contents.toString());
 
 					// Validate collection file
 					if (typeof job.format.override.validateCollectionJson === 'function') {
-						json = job.format.override.validateCollectionJson(json)
+						collection = job.format.override.validateCollectionJson(collection)
 					} else {
-						json = _validateCollectionJson(json);
+						collection = _validateCollectionJson(collection);
 					}
 
 					// Get filename (used when saving)
-					filename = json.filename;
+					filename = collection.filename;
 
 					// Render the collection contents into a single HTML string
 					let html = "";
 					if (typeof job.format.override.renderCollectionJson === 'function') {
-						html = job.format.override.renderCollectionJson(job, json);
+						html = job.format.override.renderCollectionJson(job, collection);
 					} else {
-						html = json.contents.map((x) => {
-							let fragment = fileManager.findFile(job.project, job.format, 'fragments', `${x}.md`);
+						html = collection.contents.map((x) => {
+							let fragment = fileManager.findFile(job.project, job.format, `fragments/${job.language}/${x}.md`);
 							if (!fragment) {
-								throw new ReferenceError(`Fragment file "${x}.md" does not exist.`);
+								throw new ReferenceError(`Fragment file "${job.language}/${x}.md" does not exist.`);
 							}
 							return fragment;
 						}).filter((x) => x != null).join('\n');
@@ -140,34 +136,32 @@ function buildHtmlCollections(job, language) {
 					chunk.contents = Buffer.from(html);
 					callback(null, chunk);
 				} catch (e) {
-					e.message = `[Building ${job.project.name}/collections/${collectionFilename}] ${e.message}`;
+					e.message = `[Building ${job.project.name}/collections/${job.language}/${collectionFilename}] ${e.message}`;
 					reject(e);
 				}
 			}))
 			.pipe(dom(function() {
 				// Apply format and project-specific HTML adjustments
-				if (typeof job.format.processHtml === 'function') {
-					job.format.processHtml(this);
+				if (typeof job.format.override.processDomCollection === 'function') {
+					job.format.override.processDomCollection(job, this, collection);
 				}
-				if (typeof job.project.processHtml === 'function') {
-					job.project.processHtml(this);
+				if (typeof job.project.override.processDomCollection === 'function') {
+					job.project.override.processDomCollection(job, this, collection);
 				}
-				// Run JSON renderers (if any)
-				jsonManager.renderJson(job, this);
+				// Run blueprint renderers (if any)
+				blueprintManager.renderBlueprints(job, this, collection);
 				// Apply translations (if any)
-				let translator = translationManager.createTranslator(job.project, job.format, language);
-				this.head.innerHTML = translator.replaceMessages(this.head.innerHTML);
-				this.body.innerHTML = translator.replaceMessages(this.body.innerHTML);
+				job.translator.processDom(job, this, collection);
 				return this;
 			}))
 			.pipe(beautify.html({ indent_with_tabs: true }));
 
 		// Save the collection
-		if (typeof job.format.override.saveHtmlCollection === 'function') {
-			job.format.override.saveHtmlCollection(job, language, stream);
+		if (typeof job.format.override.saveCollection === 'function') {
+			job.format.override.saveCollection(job, filename, stream);
 		} else {
 			stream.pipe(rename((path) => {
-				path.basename = filename + `_v${version.replace(/\./g, '-')}` + (language ? `_${language}` : '');
+				path.basename = filename + `_v${job.project.version.replace(/\./g, '-')}` + (job.language ? `_${job.language}` : '');
 				path.extname = '.html';
 				logManager.postInfo(logManager.formatTask(job.project.name, job.format.name, path.basename + path.extname, "Built HTML collection"));
 			}))

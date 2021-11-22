@@ -35,8 +35,8 @@ function getSrc(project, format, folder, files, filter) {
 		)
 	).pipe(
 		gulp.src(
-			path.join(project.src, `${folder}/_${format.name}/**/${filter ? filter : ''}${files}`),
-			{ base: path.join(project.src, `${folder}/_${format.name}`) }
+			path.join(project.src, `formats/${format.name}/${folder}/**/${filter ? filter : ''}${files}`),
+			{ base: path.join(project.src, `formats/${format.name}/${folder}`) }
 		)
 	);
 }
@@ -45,15 +45,14 @@ function getSrc(project, format, folder, files, filter) {
  * Find a file in one of three cascading folders: project+format, project, then format.
  * @param {Object} project - Project config details.
  * @param {Object} format - Format config details.
- * @param {string} folder - A target folder to search in.
- * @param {string} filename - A target file to find.
+ * @param {string} filepath - A target file to find.
  * @returns {string|null} Returns either a file or null if no file is found.
  */
-function findFile(project, format, folder, filename) {
+function findFile(project, format, filepath) {
 	const paths = [
-		path.join(project.src, folder, `_${format.name}`, filename),
-		path.join(project.src, folder, filename),
-		path.join(format.src, folder, filename)
+		path.join(project.src, "formats", format.name, filepath),
+		path.join(project.src, filepath),
+		path.join(format.src, filepath)
 	];
 	let file = null;
 	paths.some((path) => {
@@ -68,6 +67,28 @@ function findFile(project, format, folder, filename) {
 }
 
 /**
+ * Get all file variants in three cascading folders: project+format, project, and format.
+ * @param {Object} project - Project config details.
+ * @param {Object} format - Format config details.
+ * @param {string} filepath - A target file to find.
+ * @returns {string[]} Returns a list of files.
+ */
+ function getFileVariants(project, format, filepath) {
+	const paths = [
+		path.join(project.src, "formats", format.name, filepath),
+		path.join(project.src, filepath),
+		path.join(format.src, filepath)
+	];
+	let files = [];
+	paths.forEach((path) => {
+		if (fs.existsSync(path)) {
+			files.push(fs.readFileSync(path, 'utf8'));
+		}
+	});
+	return files;
+}
+
+/**
  * List all filenames in a directory.
  * @param {string} dir - A directory path.
  * @returns {string[]} A list of filenames.
@@ -77,17 +98,13 @@ function listFilenames(dir) {
 }
 
 /**
- * Create a series of folders.
- * @param {string[]} folders - A list of folders to create in sequence. 
+ * Create a path.
+ * @param {string} path - A folder path. 
  */
-function createPath(folders) {
-	let target = '';
-	folders.forEach((folder) => {
-		target = path.join(target, folder);
-		if (!fs.existsSync(target)) {
-			fs.mkdirSync(target);
-		}
-	});
+function createPath(path) {
+	if (!fs.existsSync(path)) {
+		fs.mkdirSync(path, { recursive: true });
+	}
 }
 
-export { getSrc, findFile, listFilenames, createPath };
+export { getSrc, findFile, listFilenames, createPath, getFileVariants };

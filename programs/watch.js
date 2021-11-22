@@ -9,6 +9,7 @@
 
 import * as build from "./build.js";
 import * as logManager from "../utilities/logManager.js";
+import * as translationManager from "../utilities/translationManager.js";
 import gulp from "gulp";
 
 /**
@@ -19,14 +20,15 @@ import gulp from "gulp";
 function watch(jobs) {
 	if (jobs.length > 0) {
 		logManager.postEmptyLine();
-		logManager.postInfo(logManager.formatBg(`Watching [${jobs[0].tasks.join(', ')}] for changes`, "blue"));
+		logManager.postInfo(logManager.formatBg(`Watching [${[...new Set(jobs.map((x) => x.task))].join(', ')}] for changes`, "blue"));
 		logManager.postEmptyLine();
-		jobs.filter((x) => x.tasks.includes("fonts")).forEach((x) => _watchFolders(x, 'fonts/**/*.*', build.buildFonts));
-		jobs.filter((x) => x.tasks.includes("html")).forEach((x) => _watchFolders(x, '{fragments,collections,translations}/**/*.*', build.buildHtml));
-		jobs.filter((x) => x.tasks.includes("images")).forEach((x) => _watchFolders(x, 'images/**/*.+(jpg|jpeg|gif|png|svg)', build.buildImages));
-		jobs.filter((x) => x.tasks.includes("scripts")).forEach((x) => _watchFolders(x, 'scripts/**/*.js', build.buildScripts));
-		jobs.filter((x) => x.tasks.includes("stylesheets")).forEach((x) => _watchFolders(x, 'stylesheets/**/*.scss', build.buildStylesheets));
-		jobs.filter((x) => x.tasks.includes("vendors")).forEach((x) => _watchFolders(x, 'vendors/**/*.*', build.buildVendors));
+		jobs.filter((x) => x.task === "fonts").forEach((x) => _watchFolders(x, 'fonts/**/*.*', build.buildFonts));
+		jobs.filter((x) => x.task === "html").forEach((x) => _watchFolders(x, '{fragments,collections}/**/*.*', build.buildHtml));
+		jobs.filter((x) => x.task === "html").forEach((x) => _watchFolders(x, 'translations/**/*.*', _deleteTranslations));
+		jobs.filter((x) => x.task === "images").forEach((x) => _watchFolders(x, 'images/**/*.+(jpg|jpeg|gif|png|svg)', build.buildImages));
+		jobs.filter((x) => x.task === "scripts").forEach((x) => _watchFolders(x, 'scripts/**/*.js', build.buildScripts));
+		jobs.filter((x) => x.task === "stylesheets").forEach((x) => _watchFolders(x, 'stylesheets/**/*.scss', build.buildStylesheets));
+		jobs.filter((x) => x.task === "vendors").forEach((x) => _watchFolders(x, 'vendors/**/*.*', build.buildVendors));
 	}
 }
 
@@ -44,6 +46,16 @@ function _watchFolders(job, path, cb) {
 }
 
 /**
+ * Delete all loaded translations and rebuild HTML.
+ * @param {Object[]} jobs - A list of watch jobs to perform.
+ * @returns {Promise} Status of the buildHtml task.
+ */
+function _deleteTranslations(jobs) {
+	translationManager.deleteMessageKeys();
+	return build.buildHtml(jobs);
+}
+
+/**
  * Get a list of folders to watch for a specific job/path combination.
  * @param {Object} jobs - A job.
  * @param {string} path - A glob folder/file filter.
@@ -52,7 +64,8 @@ function _watchFolders(job, path, cb) {
 function _listFolders(job, path) {
 	return [
 		`${job.format.src.replace(/\\/g, "/")}/${path}`,
-		`${job.project.src.replace(/\\/g, "/")}/${path}`
+		`${job.project.src.replace(/\\/g, "/")}/${path}`,
+		`${job.project.src.replace(/\\/g, "/")}/formats/${job.format.name}/${path}`
 	];
 }
 
