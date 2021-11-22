@@ -1,13 +1,12 @@
 /**
  * This class represents a MarkdownMaker configuration file.
  * 
- * @module Maker
  * @author Giffyglyph <giffyglyph@gmail.com>
  * @copyright Giffyglyph 2021
  * @license GPL-3.0-or-later
  */
 
- class Maker {
+class Maker {
 	output = {
 		build: null,
 		export: null
