@@ -36,7 +36,7 @@ async function exportPdf(job, file, options) {
 		const page = await browser.newPage();
 		await page.goto(`file://${path.join(process.cwd(), job.output.build, "html", file)}`, { timeout: 3000000, waitUntil: 'networkidle0' });
 		await page.emulateMedia('print');
-		fileManager.createPath(job.output.exportRoute.concat([ 'pdfs' ]));
+		fileManager.createPath(path.join(job.output.export, 'pdfs'));
 		const outputPath = path.join(process.cwd(), job.output.export, 'pdfs', `${path.parse(path.basename(file)).name}.pdf`);
 		logManager.postInfo(logManager.formatTask(job.project.name, job.format.name, file, 'Rendering file...'));
 		let pdfOptions = Object.assign({}, options, {
@@ -84,7 +84,7 @@ async function exportPngs(job, file, options) {
 			};
 		}));
 
-		fileManager.createPath(job.output.exportRoute.concat([ 'pngs' ]));
+		fileManager.createPath(path.join(job.output.export, 'pngs'));
 		let printRanges = options.pageRanges ? _getPrintRangeAsArray(options.pageRanges) : null;
 		await elements.reduce(async(value, element, index) => {
 			if (printRanges == null || printRanges.includes(index + 1)) {
@@ -149,7 +149,7 @@ async function exportJpgs(job, file, options) {
 			};
 		}));
 
-		fileManager.createPath(job.output.exportRoute.concat([ 'jpgs' ]));
+		fileManager.createPath(path.join(job.output.export, 'jpgs'));
 		let printRanges = options.pageRanges ? _getPrintRangeAsArray(options.pageRanges) : null;
 		await elements.reduce(async(value, element, index) => {
 			if (printRanges == null || printRanges.includes(index + 1)) {
@@ -194,7 +194,7 @@ async function exportJpgs(job, file, options) {
  */
 function exportZip(job) {
 	try {
-		fileManager.createPath(job.output.exportRoute.concat([ 'zips' ]));
+		fileManager.createPath(path.join(job.output.export, 'zips'));
 		let zipName = job.project.name + "_" + (new Date().toISOString().slice(0, 19).replace(/[-:]/g, ""));
 		const output = fs.createWriteStream(path.join(process.cwd(), job.output.export, 'zips', `${zipName}.zip`));
 		const archive = archiver('zip', { zlib: { level: 9 }});
